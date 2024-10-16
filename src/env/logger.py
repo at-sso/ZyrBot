@@ -39,7 +39,6 @@ class __LoggerHandler:
                 files_to_delete: List[str] = files[
                     : len(LOGGER_FOLDER_PATH) - logger_amount
                 ]
-                files_to_delete.remove(".stdout")
                 for file_name in files_to_delete:
                     file_path: str = os.path.join(LOGGER_FOLDER_PATH, file_name)
                     os.remove(file_path)

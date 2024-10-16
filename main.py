@@ -1,7 +1,14 @@
-from src import tools
+from nltk.chat.util import Chat, reflections
+
+from src.env import tools
+from src.chatbot_pairs import pairs
 
 
 def main() -> int:
+    chatbot = Chat(pairs, reflections)
+    tools.clear_terminal()
+    print("Hello!")
+    chatbot.converse()
     return 0
 
 

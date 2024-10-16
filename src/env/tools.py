@@ -1,7 +1,7 @@
 __all__ = ["function_handler", "clear_terminal"]
 
 import os
-import time
+from time import time as timer
 import traceback
 
 from .ctypes import *
@@ -43,25 +43,23 @@ def function_handler(func: GenericCallable) -> Any:
     - Return Value:
         - Returns the value returned by the wrapped function.
     """
-    start: float = time.time()
+    start: float = timer()
 
     def __format_final_message(
-        start: float, func: GenericCallable, is_exception: bool = False
+        func: GenericCallable, is_exception: bool = False
     ) -> None:
         """
         The function `__format_final_message` logs the execution time of a given function based on the start and
         end timestamps.
 
-        @param start The `start` parameter is the start timestamp of the timer, indicating when the timer
-        was initially started.
         @param func The `func` parameter in the `__format_final_message` function is a callable that represents
         the function being executed. It can be any function that can be called with any number of arguments
         and returns a value of any type.
         """
-        end: float = time.time()
+        duration: float = start - timer()
         logger.debug(
             f"{'Unhandled operation' if is_exception else 'Operation'}: "
-            f"{func} took: {abs(start - end)} ms."
+            f"{func} took: {abs(duration if duration > 0.0 else 0.0)} ms."
         )
 
     logger.info(f"Start of: {func}.")
@@ -69,11 +67,11 @@ def function_handler(func: GenericCallable) -> Any:
     try:
         func_val: Any = func()
     except Exception:
-        __format_final_message(start, func, is_exception=True)
+        __format_final_message(func, is_exception=True)
         logger.critical(
             f"Unhandled exception raised in {func}:" f"\n{traceback.format_exc()}"
         )
         raise
 
-    __format_final_message(start, func)
+    __format_final_message(func)
     return func_val
