@@ -8,7 +8,7 @@ def main() -> int:
     chatbot = Chat(pairs, reflections)
     tools.clear_terminal()
     print("Hello!")
-    chatbot.converse()
+    chatbot.converse("exit")
     return 0
 
 

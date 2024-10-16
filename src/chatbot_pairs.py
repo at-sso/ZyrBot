@@ -9,7 +9,7 @@ pairs: list[list[Any]] = [
     ],
     [r"how are you?", ["I'm doing well, thank you!", "I'm great!"]],
     [r"sorry (.*)", ["No problem!", "It's okay!", "No worries!"]],
-    [r"(quit|exit)", ["Goodbye! Have a nice day!"]],
+    ["exit", ["Goodbye! Have a nice day!"]],
     # Fallback response (Not a paired answer)
     [
         r"(.*)",

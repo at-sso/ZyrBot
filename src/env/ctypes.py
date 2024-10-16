@@ -12,7 +12,7 @@ from typing_extensions import (
 
 List = list
 Dict = dict
-Tuple = tuple  # type: ignore[type-arg]
+Tuple = tuple
 Type = type
 
 # Type constructors:
