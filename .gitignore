@@ -1,3 +1,14 @@
+# IDE folders:
+.vs
+.vscode
+.idea
 .venv
-.log
-*pycache*
+
+# Needed VSCode files:
+!*./launch.json
+
+# Log or cache folders
+__pycache__
+.pytest_cache
+**/cache/**
+*.log
