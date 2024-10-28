@@ -1,3 +1,8 @@
+from pygame import (
+    Surface,
+    Rect,
+)
+from pygame.font import Font
 from collections.abc import (
     Callable,
 )
@@ -8,6 +13,7 @@ from typing import (
 )
 from typing_extensions import (
     ParamSpec,
+    LiteralString as LitStr,
 )
 
 List = list
@@ -33,6 +39,21 @@ GenericCallable = Callable[..., Any]
 
 # Lists
 GenericList = List[Any]
+StrList = list[str]
 
 # Maps
 GenericMap = Dict[Any, Any]
+
+# Tuple
+GenericTuple = tuple[Any, ...]
+__TupleIntInt = tuple[int, int]
+
+# Custom
+# PyGame
+HEXColorType = LitStr
+"""The string must represent a 24-bit wise hexadecimal value."""
+ScreenSizeType = __TupleIntInt
+PosType = __TupleIntInt
+ObjectPosType = list[PosType]
+# SIA
+SIAScoreType = list[float]

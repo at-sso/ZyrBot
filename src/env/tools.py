@@ -59,7 +59,7 @@ def function_handler(func: GenericCallable) -> Any:
         duration: float = start - timer()
         logger.debug(
             f"{'Unhandled operation' if is_exception else 'Operation'}: "
-            f"{func} took: {abs(duration if duration > 0.0 else 0.0)} ms."
+            f"{func} took: {abs(duration)} ms."
         )
 
     logger.info(f"Start of: {func}.")

@@ -1,2 +1,3 @@
-- Add a way to feel "human emotions" with numbers (i forgot how the thing its called)
-- Add a response from "I am feeling good / bad" from the user
+- Fix the UI.
+- Might need to add a way to see the raw data in the UI.
+- Better user input handling in general.
