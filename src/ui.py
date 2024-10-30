@@ -25,7 +25,7 @@ pyg.init()
 win_width, win_height = 1024, 768
 window_screen: Surface = pyg.display.set_mode((win_width, win_height))
 pyg.display.set_caption("Sentiment Analysis")
-pyg.display.set_icon(pyg.image.load("./src/icon.jpg"))
+pyg.display.set_icon(pyg.image.load("./src/.icon.jpg"))
 
 # Colors
 BG_COLOR = "#202020"
@@ -45,10 +45,10 @@ def draw_input_box(
     screen.blit(input_surface, (input_box.x + 10, input_box.y + 5))
 
 
-def draw_button(screen: Surface, font: Font, button_box: Rect) -> None:
+def draw_button(screen: Surface, font: Font, button_box: Rect, text: str) -> None:
     """Draws the button to trigger analysis."""
     pyg.draw.rect(screen, pyg.Color(BUTTON_COLOR), button_box)
-    button_surface: Surface = font.render("Analyze Text", True, pyg.Color(TEXT_COLOR))
+    button_surface: Surface = font.render(text, True, pyg.Color(TEXT_COLOR))
     screen.blit(button_surface, (button_box.x + 20, button_box.y + 5))
 
 
