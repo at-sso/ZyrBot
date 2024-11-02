@@ -1,9 +1,12 @@
 import os
-from time import time as timer
+import sys
 import traceback
+import importlib.util
+from pathlib import Path
+from time import time as timer
 
-from src.env.ctypes import *
-from src.env.logger import logger as __logger
+from .ctypes import *
+from .logger import logger as __logger
 
 
 def clear_terminal() -> int:
@@ -72,3 +75,21 @@ def f_wrapper(func: GenericCallable) -> Any:
 
     __format_final_message(func)
     return func_val
+
+
+def import_dot_folder(folder_name: LitStr, module_name: LitStr):
+    # Locate the .dot folder path
+    dot_folder_path: Path = Path(folder_name).resolve()
+    module_file: Path = dot_folder_path / f"{module_name}.py"
+
+    # Check if the file exists
+    if not module_file.is_file():
+        raise FileNotFoundError(f"No module named '{module_name}' in {folder_name}")
+
+    # Load the module dynamically
+    spec = importlib.util.spec_from_file_location(module_name, module_file)
+    module = importlib.util.module_from_spec(spec)  # type: ignore[reportArgumentType]
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)  # type: ignore[reportOptionalMemberAccess]
+
+    return module

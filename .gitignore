@@ -12,3 +12,6 @@ __pycache__
 .pytest_cache
 **/cache/**
 *.log
+
+# Private files:
+key**

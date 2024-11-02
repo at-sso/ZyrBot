@@ -1,12 +1,12 @@
 __all__ = ["logger"]
 
-import logging
 import os
-from collections.abc import Callable
+import logging
 from typing import Any
+from collections.abc import Callable
 
-from src.env.ctypes import *
-from src.env.globales import *
+from .ctypes import *
+from .globales import *
 
 
 class __LoggerHandler:
@@ -71,11 +71,11 @@ class __LoggerHandler:
         """
         if not self.logger.disabled:
             if force_logger_in_shell:
-                print(logging_level, message)
+                print(logging.getLevelName(logging_level), message)
             self.__logger_function[logging_level](message)
 
 
-__hdlr = __LoggerHandler()
+_hdlr = __LoggerHandler()
 
 
 class __Logger:
@@ -89,7 +89,7 @@ class __Logger:
         @param message The `message` parameter in the `debug` method is an object that represents the
         message to be logged at the 'DEBUG' level.
         """
-        __hdlr.handler(logging.DEBUG, message, force_logger_in_shell=self.in_shell)
+        _hdlr.handler(logging.DEBUG, message, force_logger_in_shell=self.in_shell)
 
     def info(self, message: Any) -> None:
         """
@@ -98,7 +98,7 @@ class __Logger:
         @param message The `message` parameter in the `info` method is an object that represents the
         message to be logged at the 'INFO' level.
         """
-        __hdlr.handler(logging.INFO, message, force_logger_in_shell=self.in_shell)
+        _hdlr.handler(logging.INFO, message, force_logger_in_shell=self.in_shell)
 
     def warning(self, message: Any) -> None:
         """
@@ -107,7 +107,7 @@ class __Logger:
         @param message The `message` parameter in the `info` warning is a string that represents the
         message to be logged at the 'WARNING' level.
         """
-        __hdlr.handler(logging.WARNING, message, force_logger_in_shell=self.in_shell)
+        _hdlr.handler(logging.WARNING, message, force_logger_in_shell=self.in_shell)
 
     def error(self, message: Any) -> None:
         """
@@ -116,7 +116,7 @@ class __Logger:
         @param message The `message` parameter in the `error` method is an object that represents the
         message to be logged at the 'ERROR' level.
         """
-        __hdlr.handler(logging.ERROR, message, force_logger_in_shell=self.in_shell)
+        _hdlr.handler(logging.ERROR, message, force_logger_in_shell=self.in_shell)
 
     def critical(self, message: Any) -> None:
         """
@@ -125,7 +125,7 @@ class __Logger:
         @param message The `message` parameter in the `critical` method is an object that represents the
         message to be logged at the 'CRITICAL' level.
         """
-        __hdlr.handler(logging.CRITICAL, message, force_logger_in_shell=self.in_shell)
+        _hdlr.handler(logging.CRITICAL, message, force_logger_in_shell=self.in_shell)
 
 
 logger = __Logger()
