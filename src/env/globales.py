@@ -3,6 +3,7 @@ __all__ = [
     "SOURCE_FOLDER",
     "LOGGER_FOLDER_PATH",
     "LOGGER_FILE",
+    "LOGGER_MAX_BACKUP",
 ]
 
 import os
@@ -27,4 +28,5 @@ LOGGER_FILE: str = os.path.join(
     LOGGER_FOLDER_PATH,
     (f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}") + ".log",
 )
+LOGGER_MAX_BACKUP: int = 10
 ######################################################################################################

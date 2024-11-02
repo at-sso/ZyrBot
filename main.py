@@ -1,5 +1,4 @@
-from src.env import tools
-from src.env.logger import *
+import src.env as env
 
 
 def main() -> int:
@@ -7,4 +6,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    tools.function_wrapper(main)
+    env.f_wrapper(main)

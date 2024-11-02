@@ -5,8 +5,8 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-from .ctypes import *
-from .globales import *
+from src.env.ctypes import *
+from src.env.globales import *
 
 
 class __LoggerHandler:
@@ -34,8 +34,8 @@ class __LoggerHandler:
         # Delete the oldest files.
         try:
             files: List[str] = os.listdir(LOGGER_FOLDER_PATH)
-            if not len(files) < 10:
-                logger_amount: int = max(len(files) // 10, 1)
+            if not len(files) < LOGGER_MAX_BACKUP:
+                logger_amount: int = max(len(files) // LOGGER_MAX_BACKUP, 1)
                 files_to_delete: List[str] = files[
                     : len(LOGGER_FOLDER_PATH) - logger_amount
                 ]
@@ -75,59 +75,57 @@ class __LoggerHandler:
             self.__logger_function[logging_level](message)
 
 
-logger_handler = __LoggerHandler()
+__hdlr = __LoggerHandler()
 
 
 class __Logger:
-    @staticmethod
-    def debug(message: Any) -> None:
+    def __init__(self) -> None:
+        self.in_shell: bool = False
+
+    def debug(self, message: Any) -> None:
         """
         The function `debug` logs a debug message using a logger message handler.
 
         @param message The `message` parameter in the `debug` method is an object that represents the
         message to be logged at the 'DEBUG' level.
         """
-        logger_handler.handler(logging.DEBUG, message)
+        __hdlr.handler(logging.DEBUG, message, force_logger_in_shell=self.in_shell)
 
-    @staticmethod
-    def info(message: Any) -> None:
+    def info(self, message: Any) -> None:
         """
         This function logs an informational message using a logger message handler.
 
         @param message The `message` parameter in the `info` method is an object that represents the
         message to be logged at the 'INFO' level.
         """
-        logger_handler.handler(logging.INFO, message)
+        __hdlr.handler(logging.INFO, message, force_logger_in_shell=self.in_shell)
 
-    @staticmethod
-    def warning(message: Any) -> None:
+    def warning(self, message: Any) -> None:
         """
         The `warning` function logs a warning message using a logger message handler.
 
         @param message The `message` parameter in the `info` warning is a string that represents the
         message to be logged at the 'WARNING' level.
         """
-        logger_handler.handler(logging.WARNING, message)
+        __hdlr.handler(logging.WARNING, message, force_logger_in_shell=self.in_shell)
 
-    @staticmethod
-    def error(message: Any) -> None:
+    def error(self, message: Any) -> None:
         """
         The function `error` logs an error message using a logger message handler.
 
         @param message The `message` parameter in the `error` method is an object that represents the
         message to be logged at the 'ERROR' level.
         """
-        logger_handler.handler(logging.ERROR, message)
+        __hdlr.handler(logging.ERROR, message, force_logger_in_shell=self.in_shell)
 
-    @staticmethod
-    def critical(message: Any) -> None:
+    def critical(self, message: Any) -> None:
         """
         This function logs a critical message using a logger message handler.
 
         @param message The `message` parameter in the `critical` method is an object that represents the
         message to be logged at the 'CRITICAL' level.
         """
-        logger_handler.handler(logging.CRITICAL, message)
+        __hdlr.handler(logging.CRITICAL, message, force_logger_in_shell=self.in_shell)
 
 
 logger = __Logger()

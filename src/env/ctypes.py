@@ -44,11 +44,3 @@ GenericTuple = tuple[Any, ...]
 __TupleIntInt = tuple[int, int]
 
 # Custom
-# PyGame
-HEXColorType = LitStr
-"""The string must represent a 24-bit wise hexadecimal value."""
-ScreenSizeType = __TupleIntInt
-PosType = __TupleIntInt
-ObjectPosType = list[PosType]
-# SIA
-SIAScoreType = list[float]

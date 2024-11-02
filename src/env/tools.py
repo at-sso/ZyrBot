@@ -1,11 +1,9 @@
-__all__ = ["function_wrapper", "clear_terminal"]
-
 import os
 from time import time as timer
 import traceback
 
-from .ctypes import *
-from .logger import *
+from src.env.ctypes import *
+from src.env.logger import logger as __logger
 
 
 def clear_terminal() -> int:
@@ -13,7 +11,7 @@ def clear_terminal() -> int:
     return os.system("cls" if os.name == "nt" else "clear")
 
 
-def function_wrapper(func: GenericCallable) -> Any:
+def f_wrapper(func: GenericCallable) -> Any:
     """Wraps a function call with logging and exception handling.
 
     This function takes another function (`func`) as an argument and executes it
@@ -33,7 +31,6 @@ def function_wrapper(func: GenericCallable) -> Any:
             - Formats a final message using.
             - Logs a critical message using with details about the exception,
             including the function information and the traceback.
-            - Calls `THE_MAIN_LOOP_WAS_TERMINATED`.
             - Re-raises the exception to propagate it further.
 
     - Normal Execution:
@@ -57,18 +54,18 @@ def function_wrapper(func: GenericCallable) -> Any:
         and returns a value of any type.
         """
         duration: float = start - timer()
-        logger.debug(
+        __logger.debug(
             f"{'Unhandled operation' if is_exception else 'Operation'}: "
             f"{func} took: {abs(duration)} ms."
         )
 
-    logger.info(f"Start of: {func}.")
+    __logger.info(f"Start of: {func}.")
 
     try:
         func_val: Any = func()
     except Exception:
         __format_final_message(func, is_exception=True)
-        logger.critical(
+        __logger.critical(
             f"Unhandled exception raised in {func}:" f"\n{traceback.format_exc()}"
         )
         raise
