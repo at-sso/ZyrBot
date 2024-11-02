@@ -1,4 +1,4 @@
-__all__ = ["function_handler", "clear_terminal"]
+__all__ = ["function_wrapper", "clear_terminal"]
 
 import os
 from time import time as timer
@@ -13,7 +13,7 @@ def clear_terminal() -> int:
     return os.system("cls" if os.name == "nt" else "clear")
 
 
-def function_handler(func: GenericCallable) -> Any:
+def function_wrapper(func: GenericCallable) -> Any:
     """Wraps a function call with logging and exception handling.
 
     This function takes another function (`func`) as an argument and executes it

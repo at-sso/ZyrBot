@@ -1,8 +1,3 @@
-from pygame import (
-    Surface,
-    Rect,
-)
-from pygame.font import Font
 from collections.abc import (
     Callable,
 )
