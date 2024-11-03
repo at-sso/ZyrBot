@@ -1,9 +1,17 @@
+__all__ = [
+    "clear_terminal",
+    "f_wrapper",
+    "import_dot_folder",
+]
+
 import os
 import sys
 import traceback
-import importlib.util
+import importlib.util as import_util
+from importlib.machinery import ModuleSpec
 from pathlib import Path
 from time import time as timer
+from types import ModuleType
 
 from .ctypes import *
 from .logger import logger as __logger
@@ -77,18 +85,19 @@ def f_wrapper(func: GenericCallable) -> Any:
     return func_val
 
 
-def import_dot_folder(folder_name: LitStr, module_name: LitStr):
+def import_dot_folder(folder_name: LitStr, module_name: LitStr) -> ModuleType:
     # Locate the .dot folder path
     dot_folder_path: Path = Path(folder_name).resolve()
     module_file: Path = dot_folder_path / f"{module_name}.py"
 
-    # Check if the file exists
     if not module_file.is_file():
-        raise FileNotFoundError(f"No module named '{module_name}' in {folder_name}")
+        raise ModuleNotFoundError(f"No module named '{module_name}' in {folder_name}")
 
     # Load the module dynamically
-    spec = importlib.util.spec_from_file_location(module_name, module_file)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[reportArgumentType]
+    spec: Optional[ModuleSpec] = import_util.spec_from_file_location(
+        module_name, module_file
+    )
+    module: ModuleType = import_util.module_from_spec(spec)  # type: ignore[reportArgumentType]
     sys.modules[module_name] = module
     spec.loader.exec_module(module)  # type: ignore[reportOptionalMemberAccess]
 

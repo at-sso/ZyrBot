@@ -20,7 +20,7 @@ The Gemini API unlocks powerful AI capabilities for your Python projects. Howeve
 2. **Encrypt Your API Key:**
 
    - Acquire your Gemini API key from the Google AI Platform.
-   - Use a tool like `gpg4win` to encrypt your API key (as raw text) with the AES256 algorithm. Here's an example command:
+   - Use a tool like `gpg4win` to encrypt your API key (as raw text) with the `AES256` algorithm. Here's an example command:
 
    ```sh
    gpg --symmetric --batch --cipher-algo AES256 --output key.gpg your_api_key.txt

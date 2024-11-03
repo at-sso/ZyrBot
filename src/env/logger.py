@@ -57,6 +57,7 @@ class __LoggerHandler:
         self.logger.addHandler(logger_handler)
 
         self.handler(logging.INFO, "Logger started.")
+        self.handler(logging.DEBUG, f"Max logger backup: {LOGGER_MAX_BACKUP}.")
 
     def handler(
         self, logging_level: int, message: Any, force_logger_in_shell: bool = False

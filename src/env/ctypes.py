@@ -5,10 +5,12 @@ from typing import (
     Any,
     Generic,
     TypeVar,
+    Optional,
 )
 from typing_extensions import (
     ParamSpec,
     LiteralString as LitStr,
+    NoReturn,
 )
 
 List = list
