@@ -1,6 +1,6 @@
 ## Runtime Flags
 
-Runtime flags provide a flexible way to tailor your usage to your specific needs. These flags allow you to control various aspects of the program's behavior, such as package installation, API key handling, etc...
+Runtime flags provide a flexible way to tailor your usage to your specific needs. These flags allow you to control various aspects of the program's behavior, such as package installation, API key handling, etc... If a flag is not used or set, the default value of this flag will be used instead.
 
 ## Index
 
@@ -18,29 +18,31 @@ Runtime flags provide a flexible way to tailor your usage to your specific needs
 
 ### Global Flags
 
-| Flag             | Description                                                                                                                                                                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`-noWinget`**  | This flag prevents the script from automatically installing packages using `winget`. This is useful if you prefer to use a different package manager like `chocolatey` or if you have specific installation requirements.                      |
-| **`-enDevToys`** | Enables a set of developer-oriented configuration options. These options can be toggled to provide additional insights and debugging tools. The specific features enabled by this flag may vary depending on the application's implementation. |
+| Flag                     | Description                                                                                                                                                                                                                                    | Default value |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| **`-noWinget`**          | This flag prevents the script from automatically installing packages using `winget`. This is useful if you prefer to use a different package manager like `chocolatey` or if you have specific installation requirements.                      | `False`       |
+| **`-devToys`**           | Enables a set of developer-oriented configuration options. These options can be toggled to provide additional insights and debugging tools. The specific features enabled by this flag may vary depending on the application's implementation. | `False`       |
+| **`-lactoseIntolerant`** | Suppresses `icecream` log messages (those starting with `ic \| ...`) from appearing in the terminal.                                                                                                                                           | `False`       |
 
 ### API Key Configuration Flags
 
-| Flag                    | Description                                                                                                                                                                                                                                                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`-doNotSaveMyKey`**   | This flag disables the automatic saving of your decrypted API key to the `key.txt` file. If this flag is enabled and the `key.txt` file exists, it will be deleted.                                                                                                                                                   |
-| **`-extraSecret`**      | Allows you to enter your API key password in the terminal. Although not needed, when used in conjunction with the `doNotSaveMyKey` flag, this flag allows you to enter your API key password in the terminal each time you run the script. This ensures that your key remains secure and is not stored in plain text. |
-| **`-customDecryption`** | This flag allows you to specify a custom decryption method if your encrypted API key is not in the standard `AES256` format. This provides flexibility for users with specific encryption preferences.                                                                                                                |
+| Flag                    | Description                                                                                                                                                                                                                                                                                                           | Default value |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| **`-saveMyKey`**        | Allows the automatic saving of your decrypted API key to the `key.txt` file. If this flag is enabled, your decrypted key will be stored for convenience, bypassing the need for re-entry each time.                                                                                                                   | `True`        |
+| **`-extraSecret`**      | Allows you to enter your API key password in the terminal. Although not needed, when used in conjunction with the `doNotSaveMyKey` flag, this flag allows you to enter your API key password in the terminal each time you run the script. This ensures that your key remains secure and is not stored in plain text. | `False`       |
+| **`-customDecryption`** | This flag allows you to specify a custom decryption method if your encrypted API key is not in the standard `AES256` format. This provides flexibility for users with specific encryption preferences.                                                                                                                | `"AES256"`    |
 
 ### Logger Configuration Flags
 
-| Flag                   | Description                                                                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **`-noLogger`**        | Completely disables logging. No logs will be generated, neither to the terminal nor to a file.                                          |
-| **`-noLoggerShell`**   | Prevents logs from being displayed in the terminal. Logged data will still be saved to a file if the `doNotSaveLogger` flag is not set. |
-| **`-doNotSaveLogger`** | Prevents logs from being saved to a file. Logs will only be displayed in the terminal if the `noLoggerShell` flag is not set.           |
+| Flag                   | Description                                                                                                                                       | Default value |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| **`-noLogger`**        | Disables logging. No log entries will be generated for the terminal or saved to a file, streamlining output and file storage.                     | `False`       |
+| **`-loggerShell`**     | Prevents logs from being displayed in the terminal. Logged data will only be saved to a file if the `noSaveLogger` flag is not set.               | `False`       |
+| **`-noSaveLogger`**    | Prevents logs from being saved to a file. Logs will only be displayed in the terminal if the `loggerShell` flag is set.                           | `False`       |
+| **`-loggerMaxBackup`** | Specifies the maximum number of log files to retain in the logger directory. Older files will be automatically removed when the limit is reached. | `5`           |
 
 ### UI Configuration Flags
 
-| Flag              | Description                                                                                                                                                                                                                                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`-loggerInUI`** | Enables a small, integrated terminal-like display within the user interface to show real-time log messages. Please note that this flag will be ineffective if logging is completely disabled using the flags mentioned in the **[Logger Configuration Flags](#logger-configuration-flags)** section. |
+| Flag                | Description                                                                                                                                                                                                                                                                               | Default value |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| **`-noLoggerInUI`** | Disables the integrated terminal-like display within the user interface for real-time log messages, providing a cleaner UI experience. Logging can still function in the terminal or in files if configured in the **[Logger Configuration Flags](#logger-configuration-flags)** section. | `True`        |

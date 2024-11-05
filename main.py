@@ -1,8 +1,5 @@
 import src.env as env
-from src.env import logger
 from src.env import *
-
-logger.in_shell = True
 
 
 def main() -> int:

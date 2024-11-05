@@ -21,16 +21,24 @@ class __ArgsHandler:
         """Argument(s)"""
         a = self.__a
 
+        # Global Flags
         self.noWinget: bool = a.noWinget
-        self.enDevToys: bool = a.enDevToys
-        self.doNotSaveMyKey: bool = a.doNotSaveMyKey
+        self.devToys: bool = a.devToys
+        self.lactoseIntolerant: bool = a.lactoseIntolerant
+        # API Key Configuration Flags
+        self.saveMyKey: bool = a.saveMyKey
         self.extraSecret: bool = a.extraSecret
         self.customDecryption: bool = a.customDecryption
+        # Logger Configuration Flags
         self.noLogger: bool = a.noLogger
-        self.noLoggerShell: bool = a.noLoggerShell
-        self.doNotSaveLogger: bool = a.doNotSaveLogger
-        self.loggerInUI: bool = a.loggerInUI
+        self.loggerShell: bool = a.loggerShell
+        self.noSaveLogger: bool = not a.noSaveLogger
         self.loggerMaxBackup: int = a.loggerMaxBackup
+        # UI Configuration Flags
+        self.noLoggerInUI: bool = a.noLoggerInUI
+
+        if self.lactoseIntolerant:
+            ic.disable()
 
     def __repr__(self) -> str:
         return f"{self.__a._get_kwargs()}"
@@ -56,6 +64,7 @@ class __ArgsHandler:
                     markdown = Markdown(help_message.read())
                 console.print(markdown)
                 parser.exit()
+                exit(0)
 
         parser = ArgumentParser(
             prog="ZyrChatBot", description="Runtime flags.", add_help=False
@@ -72,18 +81,19 @@ class __ArgsHandler:
 
         # Global Flags
         set_arg("-noWinget", action="store_true", default=False)
-        set_arg("-enDevToys", action="store_true", default=False)
+        set_arg("-devToys", action="store_true", default=False)
+        set_arg("-lactoseIntolerant", action="store_true", default=False)
         # API Key Configuration Flags
-        set_arg("-doNotSaveMyKey", action="store_true", default=False)
+        set_arg("-saveMyKey", action="store_false", default=True)
         set_arg("-extraSecret", action="store_true", default=False)
-        set_arg("-customDecryption", action="store_true", default=False)
+        set_arg("-customDecryption", type=str, default="AES256")
         # Logger Configuration Flags
         set_arg("-noLogger", action="store_true", default=False)
-        set_arg("-noLoggerShell", action="store_true", default=False)
-        set_arg("-doNotSaveLogger", action="store_true", default=False)
-        # UI Configuration Flags
-        set_arg("-loggerInUI", action="store_true", default=False)
+        set_arg("-loggerShell", action="store_true", default=False)
+        set_arg("-noSaveLogger", action="store_true", default=False)
         set_arg("-loggerMaxBackup", type=int, default=5)
+        # UI Configuration Flags
+        set_arg("-noLoggerInUI", action="store_false", default=True)
 
         return parser.parse_args()
 

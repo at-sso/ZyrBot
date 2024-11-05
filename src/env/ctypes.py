@@ -13,11 +13,6 @@ from typing_extensions import (
     NoReturn,
 )
 
-List = list
-Dict = dict
-Tuple = tuple
-Type = type
-
 # Type constructors:
 _P = ParamSpec("_P")
 _R = TypeVar("_R", bound=Any)
@@ -35,14 +30,12 @@ class CallableConstructor(Generic[_P, _R]):
 GenericCallable = Callable[..., Any]
 
 # Lists
-GenericList = List[Any]
+GenericList = list[Any]
 StrList = list[str]
 
 # Maps
-GenericMap = Dict[Any, Any]
+GenericMap = dict[Any, Any]
 
 # Tuple
 GenericTuple = tuple[Any, ...]
 __TupleIntInt = tuple[int, int]
-
-# Custom
