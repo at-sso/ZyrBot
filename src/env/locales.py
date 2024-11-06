@@ -1,5 +1,3 @@
-__all__ = []
-
 from argparse import Action, ArgumentParser, Namespace
 import os
 import platform
@@ -11,6 +9,7 @@ from rich.markdown import Markdown
 from .ctypes import *
 
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")
+_enverr: LitStr = "ENVERR"
 
 
 class __ArgsHandler:
@@ -22,13 +21,12 @@ class __ArgsHandler:
         a = self.__a
 
         # Global Flags
-        self.noWinget: bool = a.noWinget
+        self.noWinget: bool = not a.noWinget
         self.devToys: bool = a.devToys
         self.lactoseIntolerant: bool = a.lactoseIntolerant
         # API Key Configuration Flags
-        self.saveMyKey: bool = a.saveMyKey
-        self.extraSecret: bool = a.extraSecret
-        self.customDecryption: bool = a.customDecryption
+        self.doNotSaveMyKey: bool = not a.doNotSaveMyKey
+        self.extraSecret: AnyStr = a.extraSecret  # type: ignore[reportGeneralTypeIssues]
         # Logger Configuration Flags
         self.noLogger: bool = a.noLogger
         self.loggerShell: bool = a.loggerShell
@@ -84,9 +82,8 @@ class __ArgsHandler:
         set_arg("-devToys", action="store_true", default=False)
         set_arg("-lactoseIntolerant", action="store_true", default=False)
         # API Key Configuration Flags
-        set_arg("-saveMyKey", action="store_false", default=True)
-        set_arg("-extraSecret", action="store_true", default=False)
-        set_arg("-customDecryption", type=str, default="AES256")
+        set_arg("-doNotSaveMyKey", action="store_true", default=False)
+        set_arg("-extraSecret", type=str, default=_enverr)
         # Logger Configuration Flags
         set_arg("-noLogger", action="store_true", default=False)
         set_arg("-loggerShell", action="store_true", default=False)
@@ -110,6 +107,11 @@ class EnvInfo:
 
     def __repr__(self) -> str:
         return f"{self.current_path}, {self.system}, {self.release}, {self.architecture}, {self.compiler}"
+
+
+class EnvStates:
+    environment_error: LitStr = _enverr
+    unknown_type: LitStr = "?TYPE"
 
 
 ic(__ArgsHandler())

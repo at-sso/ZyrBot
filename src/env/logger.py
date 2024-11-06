@@ -4,7 +4,7 @@ import os
 import logging
 from icecream import ic
 
-from .args import flags
+from .locales import flags
 from .ctypes import *
 from .globales import *
 
@@ -54,7 +54,7 @@ class __LoggerHandler:
             logger_handler = logging.FileHandler(LOGGER_FILE, mode="w")
             # Create a formatter and set the formatter for the handler
             formatter = logging.Formatter(
-                "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+                "%(asctime)s - %(levelname)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
             logger_handler.setFormatter(formatter)
             # Add the handler to the logger
@@ -63,7 +63,9 @@ class __LoggerHandler:
             self.handler(logging.INFO, "Logger started.")
             self.handler(logging.DEBUG, f"Max logger backup: {LOGGER_MAX_BACKUP}.")
 
-    def handler(self, logging_level: int, message: Any) -> None:
+    def handler(
+        self, logging_level: int, message: Any, exc: ExceptionType = Exception
+    ) -> None:
         """
         The function `__logger_message_handler` calls a specified function with a given argument.
 
@@ -74,9 +76,13 @@ class __LoggerHandler:
         """
         if flags.noLogger:
             return
+
         if flags.loggerShell:
-            print(logging.getLevelName(logging_level), message)
+            print(logging.getLevelName(logging_level) + " |", message)
         self.__logger_function[logging_level](message)
+
+        if exc != Exception:
+            raise exc(message)
 
 
 _hdlr = __LoggerHandler()
@@ -110,23 +116,25 @@ class __Logger:
         """
         _hdlr.handler(logging.WARNING, message)
 
-    def error(self, message: Any) -> None:
+    def error(self, message: Any, exc: ExceptionType = Exception) -> None:
         """
         The function `error` logs an error message using a logger message handler.
 
         @param message The `message` parameter in the `error` method is an object that represents the
         message to be logged at the 'ERROR' level.
+        @param exc Allows you to force an exception of any type besides the base class 'Exception'.
         """
-        _hdlr.handler(logging.ERROR, message)
+        _hdlr.handler(logging.ERROR, message, exc)
 
-    def critical(self, message: Any) -> None:
+    def critical(self, message: Any, exc: ExceptionType = Exception) -> None:
         """
         This function logs a critical message using a logger message handler.
 
         @param message The `message` parameter in the `critical` method is an object that represents the
         message to be logged at the 'CRITICAL' level.
+        @param exc Allows you to force an exception of any type besides the base class 'Exception'.
         """
-        _hdlr.handler(logging.CRITICAL, message)
+        _hdlr.handler(logging.CRITICAL, message, exc)
 
 
 logger = __Logger()

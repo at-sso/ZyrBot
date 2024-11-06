@@ -8,6 +8,7 @@ from typing import (
     Optional,
 )
 from typing_extensions import (
+    AnyStr,
     ParamSpec,
     LiteralString as LitStr,
     NoReturn,
@@ -38,4 +39,8 @@ GenericMap = dict[Any, Any]
 
 # Tuple
 GenericTuple = tuple[Any, ...]
-__TupleIntInt = tuple[int, int]
+TupleIntInt = tuple[int, int]
+
+# Custom
+ExceptionType = type[Exception]
+JSONType = dict[str, Any]

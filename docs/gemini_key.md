@@ -12,12 +12,7 @@ The Gemini API unlocks powerful AI capabilities for your Python projects. Howeve
 
 **Steps:**
 
-1. **Secure Key Storage:**
-
-   - Under the folder named `.secrets` in the project directory.
-   - Inside `.secrets`, create a file named `key.gpg`. This file will hold your encrypted API key.
-
-2. **Encrypt Your API Key:**
+1. **Encrypt Your API Key:**
 
    - Acquire your Gemini API key from the Google AI Platform.
    - Use a tool like `gpg4win` to encrypt your API key (as raw text) with the `AES256` algorithm. Here's an example command:
@@ -28,12 +23,16 @@ The Gemini API unlocks powerful AI capabilities for your Python projects. Howeve
 
    **Remember to replace `your_api_key.txt` with the actual path to your API key.**
 
+2. **Secure Key Storage:**
+
+   - Move your API key under the folder named `.secrets` in the project directory if you haven't already.
+
 3. **Run the Python Script:**
 
    - Execute `main.py`. At first, the script will prompt you for the password used during encryption.
-   - Once you enter the password, the script will decrypt your key and store a plain-text version in `.secrets/key.txt` for future use.
+   - Once you enter the password, the script will decrypt your key and store a plain-text version of your password in `.secrets/key.txt` for future use.
 
-   **Note:** You'll only be prompted for the password once. Subsequent script executions will automatically use the stored key in `.secrets/key.txt`.
+   **Note:** You'll only be prompted for the password once. Subsequent script executions will automatically use the stored password in `.secrets/key.txt`.
 
 This approach ensures secure storage of your sensitive API key while enabling seamless integration with your Python code.
 

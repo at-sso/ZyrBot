@@ -1,5 +1,4 @@
 import src.env as env
-from src.env import *
 
 
 def main() -> int:

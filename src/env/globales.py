@@ -1,15 +1,8 @@
-__all__ = [
-    "CURRENT_PATH",
-    "SOURCE_FOLDER",
-    "LOGGER_FOLDER_PATH",
-    "LOGGER_FILE",
-    "LOGGER_MAX_BACKUP",
-]
-
 import os
 from datetime import datetime
 
-from .args import flags, EnvInfo
+from .ctypes import *
+from .locales import flags, EnvInfo
 
 ######################################################################################################
 # Absolute paths for commonly used directories.
@@ -19,6 +12,7 @@ CURRENT_PATH: str = EnvInfo.current_path
 NOTE: Running this path from another directory (other than main.py) may cause unexpected behavior."""
 SOURCE_FOLDER: str = f"{CURRENT_PATH}/src"
 "Source code path."
+SECRETS_FOLDER: str = f"{CURRENT_PATH}/.secrets"
 ######################################################################################################
 
 

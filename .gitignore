@@ -1,11 +1,9 @@
-# IDE folders:
+# Env folders:
 .vs
 .vscode
 .idea
 .venv
-
-# Needed VSCode files:
-!.*/launch.json
+win_venv
 
 # Log or cache folders
 __pycache__
@@ -14,4 +12,4 @@ __pycache__
 *.log
 
 # Private files:
-key**
+.secrets/**
