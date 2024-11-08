@@ -17,8 +17,10 @@ PASSWORD_FILE_PATH: str = f"{SECRETS_FOLDER}/password.txt"
 ENCRYPTED_KEY_FILE: str = f"{SECRETS_FOLDER}/key.gpg"
 
 __f_exists: Callable[[str], bool] = lambda f: os.path.isfile(f)
+"""Check if a file exists."""
 __secrets: bytes = bytes()  # Not set (yet)
-__is_extraSecrets_set: bool = flags.extraSecret != EnvStates.environment_error
+"""Binary of secret file (key.gpg)"""
+
 
 if not __f_exists(ENCRYPTED_KEY_FILE):
     logger.critical(
@@ -41,42 +43,42 @@ def init() -> None:
         "GPG might ask for your passphrase from time to time. This is normal behavior!"
     )
 
-    # Check if `noWinget` flag is set and log warnings
-    if not flags.noWinget:
-        logger.warning("Flag `noWinget` is being used.")
-
     # If the system is Windows, always try to install or update Gpg4win.
     if EnvInfo.system == "Windows" and flags.noWinget:
         logger.info("Trying to install 'Gpg4win'.")
         subprocess.run(["winget", "install", "--id", "GnuPG.Gpg4win"])
 
     # Handle password loading or prompting
-    if not __f_exists(PASSWORD_FILE_PATH) and __is_extraSecrets_set:
-        api_password: str = EnvStates.environment_error
+    if not (__f_exists(PASSWORD_FILE_PATH) and flags.help.is_extraSecrets_set):
+        api_password: str | bytes = EnvStates.unknown_value
         logger.warning("Password file doesn't exist!")
-        api_password = getpass("API key password: ")
+        # This makes debugging a little more "save"; since the data is not being shown directly.
+        api_password = getpass("API key password: ").encode("utf-32")
 
         # Only save the password to the file if `doNotSaveMyKey` is set
         if flags.doNotSaveMyKey:
             # Write the password into the file
             with open(PASSWORD_FILE_PATH, "w") as f:
-                f.write(api_password)
+                logger.debug("Flag 'doNotSaveMyKey' is disabled!")
+                f.write(api_password.decode("utf-32"))
+
         flags.extraSecret = api_password
         logger.info("Password was set manually.")
     else:
-        logger.info(
-            "API password file exists or 'extraSecret' is set. "
-            "Assuming the password is correct..."
-        )
-        if not __is_extraSecrets_set:
-            with open(PASSWORD_FILE_PATH, "rb") as f:
-                flags.extraSecret = f.read()
+        a = str
+        if flags.help.is_extraSecrets_set:
+            a = "API password file exists."
+            with open(PASSWORD_FILE_PATH, "r") as f:
+                flags.extraSecret = f.read().encode("utf-32")
+        else:
+            a = "Flag 'extraSecret' was set."
+        logger.info(a + " Assuming the password or secret is correct...")
 
     logger.info(f"Checking encryption type of '{ENCRYPTED_KEY_FILE}'.")
     # Verify encryption type and validity of the encrypted file
     secret_type: str = __get_encryption_type(ENCRYPTED_KEY_FILE)
-    if secret_type == EnvStates.unknown_type:
-        logger.critical("Failed to retrieve encryption type.", __DecryptionError)
+    if secret_type == EnvStates.environment_error:
+        logger.critical("Failed to retrieve encryption type.", exc=__DecryptionError)
     else:
         logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
 
@@ -97,16 +99,22 @@ def __get_encryption_type(f: str) -> str:
         return result.stdout
     except subprocess.CalledProcessError as e:
         logger.critical(e)
-        return EnvStates.unknown_type
+        return EnvStates.environment_error
 
 
 def get_secrets() -> str:
     """
     Decrypts the encrypted API key using GPG with the provided password.
-    Is a good idea to not store the value of this function in a variable.
+    Is a good idea to not store or print the value of this function in anywhere.
     """
     process = subprocess.Popen(
-        ["gpg", "--decrypt", "--batch", "--passphrase", flags.extraSecret],
+        [
+            "gpg",
+            "--decrypt",
+            "--batch",
+            "--passphrase",
+            flags.extraSecret.decode("utf-32"),
+        ],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

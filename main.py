@@ -3,7 +3,7 @@ import src.env as env
 
 def main() -> int:
     __secrets = env.import_dot_folder(".secrets", "clownkey")
-    __secrets.init()
+    env.f_wrapper(__secrets.init)
     return 0
 
 

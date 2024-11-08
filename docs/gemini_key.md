@@ -12,22 +12,50 @@ The Gemini API unlocks powerful AI capabilities for your Python projects. Howeve
 
 **Steps:**
 
-1. **Encrypt Your API Key:**
+1. **Obtain Your API Key:**
 
-   - Acquire your Gemini API key from the Google AI Platform.
-   - Use a tool like `gpg4win` to encrypt your API key (as raw text) with the `AES256` algorithm. Here's an example command:
+   - Log in to the Google AI Platform.
+   - Navigate to your project's API Keys page.
+   - Create a new API key or use an existing one.
+   - **Important:** Ensure the API key has the necessary permissions to access the Gemini API.
 
-   ```sh
-   gpg --symmetric --batch --cipher-algo AES256 --output key.gpg your_api_key.txt
+2. **Prepare Your API Key File:**
+
+   - Create a JSON file named `api_key.json` with the following structure:
+
+   ```json
+   {
+     "GEMINI": "your_api_key",
+     "GCLOUD": "your_google_cloud_api_key" // Optional, if you have a Google Cloud account
+   }
    ```
 
-   **Remember to replace `your_api_key.txt` with the actual path to your API key.**
+   - Replace `your_api_key` with your actual Gemini API key.
+   - If you don't have a Google Cloud account, set the `GCLOUD` key to `null`.
 
-2. **Secure Key Storage:**
+3. **Encrypt Your API Key File:**
+
+   1. **Install `gpg`:** If you haven't already, install [`gpg`](https://gnupg.org/) on your system.
+      For Windows users, you can use:
+
+      ```powershell
+      winget install --id gnuPG.Gpg4win
+      ```
+
+   2. **Encrypt the file:**
+      ```bash
+      gpg --symmetric --cipher-algo AES256 --output encrypted_api_key.gpg api_key.json
+      ```
+
+   **Using Other Encryption Tools:**
+
+   You can not use other encryption tools in this environment by default. If you wish to do so, you can always modify the source code of our API key manager in: [`clownkey.py`](../.secrets/clownkey.py).
+
+4. **Secure Key Storage:**
 
    - Move your API key under the folder named `.secrets` in the project directory if you haven't already.
 
-3. **Run the Python Script:**
+5. **Run the Python Script:**
 
    - Execute `main.py`. At first, the script will prompt you for the password used during encryption.
    - Once you enter the password, the script will decrypt your key and store a plain-text version of your password in `.secrets/key.txt` for future use.

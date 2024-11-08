@@ -53,9 +53,7 @@ def f_wrapper(func: GenericCallable) -> Any:
     """
     start: float = timer()
 
-    def __format_final_message(
-        func: GenericCallable, is_exception: bool = False
-    ) -> None:
+    def __format_final_message(func: GenericCallable, is_exception: bool) -> None:
         """
         The function `__format_final_message` logs the execution time of a given function based on the start and
         end timestamps.
@@ -81,7 +79,7 @@ def f_wrapper(func: GenericCallable) -> Any:
         )
         raise
 
-    __format_final_message(func)
+    __format_final_message(func, is_exception=False)
     return func_val
 
 

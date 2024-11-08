@@ -9,7 +9,14 @@ from rich.markdown import Markdown
 from .ctypes import *
 
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")
-_enverr: LitStr = "ENVERR"
+_logger_max: int = 5
+
+
+class EnvStates:
+    success: LitStr = "SUCCESS"
+    environment_error: LitStr = "ENVERR"
+    unknown_value: LitStr = "BADVALUE"
+    unknown_type: LitStr = "BADTYPE"
 
 
 class __ArgsHandler:
@@ -18,27 +25,39 @@ class __ArgsHandler:
 
         self.__a: Namespace = self.__p()
         """Argument(s)"""
-        a = self.__a
 
         # Global Flags
-        self.noWinget: bool = not a.noWinget
-        self.devToys: bool = a.devToys
-        self.lactoseIntolerant: bool = a.lactoseIntolerant
+        self.noWinget: bool = not self.__a.noWinget
+        self.devToys: bool = self.__a.devToys
+        self.lactoseIntolerant: bool = self.__a.lactoseIntolerant
         # API Key Configuration Flags
-        self.doNotSaveMyKey: bool = not a.doNotSaveMyKey
-        self.extraSecret: AnyStr = a.extraSecret  # type: ignore[reportGeneralTypeIssues]
+        self.doNotSaveMyKey: bool = not self.__a.doNotSaveMyKey
+        self.extraSecret: bytes = self.__a.extraSecret.encode("utf-32")
         # Logger Configuration Flags
-        self.noLogger: bool = a.noLogger
-        self.loggerShell: bool = a.loggerShell
-        self.noSaveLogger: bool = not a.noSaveLogger
-        self.loggerMaxBackup: int = a.loggerMaxBackup
+        self.noLogger: bool = self.__a.noLogger
+        self.loggerShell: bool = self.__a.loggerShell
+        self.noSaveLogger: bool = not self.__a.noSaveLogger
+        self.loggerMaxBackup: int = self.__a.loggerMaxBackup
         # UI Configuration Flags
-        self.noLoggerInUI: bool = a.noLoggerInUI
+        self.noLoggerInUI: bool = self.__a.noLoggerInUI
+
+        class __Helper:
+            is_extraSecrets_set: bool = not (
+                self.extraSecret != EnvStates.unknown_value.encode("utf-32")
+            )
+            is_loggerMaxBackup_set: bool = not (self.loggerMaxBackup > _logger_max)
+
+        self.help = __Helper()
+        """
+        Is a flag set...?
+        This will not show flags that already boolean values.
+        """
 
         if self.lactoseIntolerant:
             ic.disable()
 
     def __repr__(self) -> str:
+        self.__a.extraSecret = "secrets!"
         return f"{self.__a._get_kwargs()}"
 
     def __p(self) -> Namespace:
@@ -83,12 +102,12 @@ class __ArgsHandler:
         set_arg("-lactoseIntolerant", action="store_true", default=False)
         # API Key Configuration Flags
         set_arg("-doNotSaveMyKey", action="store_true", default=False)
-        set_arg("-extraSecret", type=str, default=_enverr)
+        set_arg("-extraSecret", type=str, default=EnvStates.unknown_value)
         # Logger Configuration Flags
         set_arg("-noLogger", action="store_true", default=False)
         set_arg("-loggerShell", action="store_true", default=False)
         set_arg("-noSaveLogger", action="store_true", default=False)
-        set_arg("-loggerMaxBackup", type=int, default=5)
+        set_arg("-loggerMaxBackup", type=int, default=_logger_max)
         # UI Configuration Flags
         set_arg("-noLoggerInUI", action="store_false", default=True)
 
@@ -107,11 +126,6 @@ class EnvInfo:
 
     def __repr__(self) -> str:
         return f"{self.current_path}, {self.system}, {self.release}, {self.architecture}, {self.compiler}"
-
-
-class EnvStates:
-    environment_error: LitStr = _enverr
-    unknown_type: LitStr = "?TYPE"
 
 
 ic(__ArgsHandler())
