@@ -6,7 +6,7 @@ This project aims to create a user-friendly interface that harnesses the power o
 
 ### Technologies
 
-- **Frontend:** `Flet/Flutte`r for a flexible and cross-platform UI.
+- **Frontend:** `Flet/Flutter` for a flexible and cross-platform UI.
 - **Backend:** `Python 3.10.X` for scripting and AI interactions.
 - **AI:** Google's Gemini API for natural language understanding and code generation.
 
@@ -35,7 +35,6 @@ This project aims to create a user-friendly interface that harnesses the power o
 
 - **Customization:** Allow users to customize the AI's behavior through settings.
 - **Advanced Features:** Explore more advanced AI capabilities such as code generation and refactoring.
-- **Integration with Other Tools:** Integrate with popular code editors or IDEs.
 
 ### References
 
@@ -43,9 +42,3 @@ This project aims to create a user-friendly interface that harnesses the power o
 - **Generate text using the Gemini API:** https://ai.google.dev/gemini-api/docs/text-generation?lang=python
 - **Flet documentation:** https://flet.dev/docs/
 
-**Key improvements in this version:**
-
-- **Clearer structure:** The README is organized into sections with clear headings.
-- **Enhanced clarity:** Explanations are more concise and easier to understand.
-- **Additional features:** Potential future features are outlined for further development.
-- **Focus on user experience:** The emphasis is on creating a user-friendly and helpful tool.
