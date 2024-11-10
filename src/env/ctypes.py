@@ -13,6 +13,8 @@ from typing_extensions import (
     ParamSpec,
     LiteralString as LitStr,
     NoReturn,
+    Self,
+    Type,
 )
 
 # Type constructors:
@@ -37,6 +39,7 @@ StrList = list[str]
 
 # Maps
 GenericMap = dict[Any, Any]
+GenericKeyMap = dict[str, Any]
 
 # Tuple
 GenericTuple = tuple[Any, ...]
@@ -44,4 +47,5 @@ TupleIntInt = tuple[int, int]
 
 # Custom
 ExceptionType = type[Exception]
-JSONType = dict[str, Any]
+FunctionSignature = tuple[GenericCallable, GenericList, GenericKeyMap]
+FunctionSignatureDetails = tuple[str, *FunctionSignature]

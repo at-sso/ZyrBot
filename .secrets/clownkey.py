@@ -8,8 +8,13 @@ from src.env.locales import flags, EnvStates
 
 
 class __DecryptionError(Exception):
-    def __init__(self, message: object) -> None:
-        super().__init__(message)
+    def __init__(self, s: object) -> None:
+        super().__init__(s)
+
+
+class __KeyManagerNotInitialized(Exception):
+    def __init__(self, s: object) -> None:
+        super().__init__(s)
 
 
 # Constants for default values and file paths
@@ -20,6 +25,7 @@ __f_exists: Callable[[str], bool] = lambda f: os.path.isfile(f)
 """Check if a file exists."""
 __secrets: bytes = bytes()  # Not set (yet)
 """Binary of secret file (key.gpg)"""
+__init_was_called: bool = False
 
 
 if not __f_exists(ENCRYPTED_KEY_FILE):
@@ -39,6 +45,7 @@ def init() -> None:
     Initializes the environment by setting up passwords, checking for dependencies,
     and ensuring encryption requirements are met.
     """
+    global __init_was_called
     logger.info(
         "GPG might ask for your passphrase from time to time. This is normal behavior!"
     )
@@ -82,9 +89,8 @@ def init() -> None:
     else:
         logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
 
-    logger.debug(
-        f"{friendly.full_name(get_secrets)}: {tools.f_wrapper(get_secrets, decrypt=False)}"
-    )
+    __init_was_called = True
+    logger.debug(f"{friendly.full_name(get)}: {f_wrapper.init(get, decrypt=False)}")
 
 
 def __get_encryption_type(f: str) -> str:
@@ -106,7 +112,7 @@ def __get_encryption_type(f: str) -> str:
         return EnvStates.environment_error
 
 
-def get_secrets(decrypt: bool) -> str:
+def get(decrypt: bool) -> str:
     """
     Decrypts the encrypted API key using GPG with the provided password.
 
@@ -118,6 +124,11 @@ def get_secrets(decrypt: bool) -> str:
 
     @return The decrypted API key if `decrypt` is True, otherwise a success indicator.
     """
+    if not __init_was_called:
+        raise __KeyManagerNotInitialized(
+            f"Operation: {friendly.full_name(init)} was not called."
+        )
+
     process = subprocess.Popen(
         [
             "gpg",

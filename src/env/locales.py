@@ -9,6 +9,7 @@ from argparse import Action, ArgumentParser, Namespace
 
 from .ctypes import *
 
+_prog_name: LitStr = "Zyr-ChatBot"
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")
 _logger_max: int = 1
 """AKA > 'loggerMaxBackup'"""
@@ -91,7 +92,7 @@ class __ArgsHandler:
                 exit(0)
 
         parser = ArgumentParser(
-            prog="ZyrChatBot", description="Runtime flags.", add_help=False
+            prog=_prog_name, description="Runtime flags.", add_help=False
         )
         set_arg: Callable[..., Action] = parser.add_argument
 
@@ -126,6 +127,7 @@ flags = __ArgsHandler()
 
 
 class EnvInfo:
+    program_name: LitStr = _prog_name
     current_path: str = _abspath
     system: str = platform.system()
     release: str = platform.release()
