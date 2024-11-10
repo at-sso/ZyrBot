@@ -1,9 +1,3 @@
-__all__ = [
-    "clear_terminal",
-    "f_wrapper",
-    "import_dot_folder",
-]
-
 import os
 import sys
 import traceback
@@ -14,7 +8,7 @@ from time import time as timer
 from types import ModuleType
 
 from .ctypes import *
-from .logger import logger as __logger
+from .logger import logger as _logger, friendly as _friendly
 
 
 def clear_terminal() -> int:
@@ -22,7 +16,7 @@ def clear_terminal() -> int:
     return os.system("cls" if os.name == "nt" else "clear")
 
 
-def f_wrapper(func: GenericCallable) -> Any:
+def f_wrapper(func: GenericCallable, *args: object, **kwargs: object) -> Any:
     """Wraps a function call with logging and exception handling.
 
     This function takes another function (`func`) as an argument and executes it
@@ -51,35 +45,29 @@ def f_wrapper(func: GenericCallable) -> Any:
     - Return Value:
         - Returns the value returned by the wrapped function.
     """
-    start: float = timer()
+    # Sets the start of the timer.
+    start: float = 0.0
+    # Sets the end of the timer
+    finish: Callable[[], float] = lambda: abs(start - timer())
+    # Function duration placeholder
+    duration: float = 0.0
+    # Function information placeholder
+    func_name: str = _friendly.func_info(func)
 
-    def __format_final_message(func: GenericCallable, is_exception: bool) -> None:
-        """
-        The function `__format_final_message` logs the execution time of a given function based on the start and
-        end timestamps.
-
-        @param func The `func` parameter in the `__format_final_message` function is a callable that represents
-        the function being executed. It can be any function that can be called with any number of arguments
-        and returns a value of any type.
-        """
-        duration: float = start - timer()
-        __logger.debug(
-            f"{'Unhandled operation' if is_exception else 'Operation'}: "
-            f"{func} took: {abs(duration)} ms."
-        )
-
-    __logger.info(f"Start of: {func}.")
+    _logger.info(f"Start of: {func_name}.")
 
     try:
-        func_val: Any = func()
+        start = timer()
+        func_val: Any = func(*args, **kwargs)
     except Exception:
-        __format_final_message(func, is_exception=True)
-        __logger.critical(
-            f"Unhandled exception raised in {func}:" f"\n{traceback.format_exc()}"
+        duration = finish()
+        _logger.critical(
+            f"Unhandled exception raised in {func_name}; this operation took {duration}. Tb: \n{traceback.format_exc()}"
         )
         raise
 
-    __format_final_message(func, is_exception=False)
+    duration = finish()
+    _logger.info(f"Operation {func_name}, took: {duration}.")
     return func_val
 
 

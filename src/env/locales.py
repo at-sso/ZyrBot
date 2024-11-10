@@ -1,22 +1,27 @@
-from argparse import Action, ArgumentParser, Namespace
 import os
 import platform
 import sys
 from icecream import ic
+from datetime import datetime
 from rich.console import Console
 from rich.markdown import Markdown
+from argparse import Action, ArgumentParser, Namespace
 
 from .ctypes import *
 
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")
-_logger_max: int = 5
+_logger_max: int = 1
+"""AKA > 'loggerMaxBackup'"""
+_logger_name: str = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.log"
+"""AKA > 'loggerName'"""
 
 
 class EnvStates:
     success: LitStr = "SUCCESS"
-    environment_error: LitStr = "ENVERR"
+    environment_error: LitStr = "ENVERROR"
     unknown_value: LitStr = "BADVALUE"
     unknown_type: LitStr = "BADTYPE"
+    unknown_location: LitStr = "BADLOCATION"
 
 
 class __ArgsHandler:
@@ -38,6 +43,7 @@ class __ArgsHandler:
         self.loggerShell: bool = self.__a.loggerShell
         self.noSaveLogger: bool = not self.__a.noSaveLogger
         self.loggerMaxBackup: int = self.__a.loggerMaxBackup
+        self.loggerName: str = self.__a.loggerName
         # UI Configuration Flags
         self.noLoggerInUI: bool = self.__a.noLoggerInUI
 
@@ -46,6 +52,7 @@ class __ArgsHandler:
                 self.extraSecret != EnvStates.unknown_value.encode("utf-32")
             )
             is_loggerMaxBackup_set: bool = not (self.loggerMaxBackup > _logger_max)
+            is_loggerName_set: bool = not (self.loggerName != _logger_name)
 
         self.help = __Helper()
         """
@@ -108,6 +115,7 @@ class __ArgsHandler:
         set_arg("-loggerShell", action="store_true", default=False)
         set_arg("-noSaveLogger", action="store_true", default=False)
         set_arg("-loggerMaxBackup", type=int, default=_logger_max)
+        set_arg("-loggerName", type=str, default=_logger_name)
         # UI Configuration Flags
         set_arg("-noLoggerInUI", action="store_false", default=True)
 

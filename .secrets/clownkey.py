@@ -82,6 +82,10 @@ def init() -> None:
     else:
         logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
 
+    logger.debug(
+        f"{friendly.full_name(get_secrets)}: {tools.f_wrapper(get_secrets, decrypt=False)}"
+    )
+
 
 def __get_encryption_type(f: str) -> str:
     """
@@ -102,10 +106,17 @@ def __get_encryption_type(f: str) -> str:
         return EnvStates.environment_error
 
 
-def get_secrets() -> str:
+def get_secrets(decrypt: bool) -> str:
     """
     Decrypts the encrypted API key using GPG with the provided password.
-    Is a good idea to not store or print the value of this function in anywhere.
+
+    Important:
+    - Do not store or print the decrypted API key in plain text. This could pose a significant security risk.
+    - Use the decrypted key immediately and securely. Avoid storing it in variables or logging it.
+
+    @parm decrypt (bool): Whether to decrypt the API key.
+
+    @return The decrypted API key if `decrypt` is True, otherwise a success indicator.
     """
     process = subprocess.Popen(
         [
@@ -124,4 +135,6 @@ def get_secrets() -> str:
     if process.returncode != 0:
         raise __DecryptionError(f"Decryption failed: {error.decode().strip()}")
 
-    return decrypted_data.decode().strip()
+    if decrypt:
+        return decrypted_data.decode().strip()
+    return EnvStates.success

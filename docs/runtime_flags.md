@@ -39,6 +39,7 @@ Runtime flags provide a flexible way to tailor your usage to your specific needs
 | **`-loggerShell`**     | Prevents logs from being displayed in the terminal. Logged data will only be saved to a file if the `noSaveLogger` flag is not set.               | `False`       |
 | **`-noSaveLogger`**    | Prevents logs from being saved to a file. Logs will only be displayed in the terminal if the `loggerShell` flag is set.                           | `False`       |
 | **`-loggerMaxBackup`** | Specifies the maximum number of log files to retain in the logger directory. Older files will be automatically removed when the limit is reached. | `5`           |
+| **`-loggerName`**      | Specifies the logger name.                                                                                                                        | Current date  |
 
 ### UI Configuration Flags
 
