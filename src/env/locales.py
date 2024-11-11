@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from argparse import Action, ArgumentParser, Namespace
 
-from .ctypes import *
+from .ptypes import *
 
 _prog_name: LitStr = "Zyr-ChatBot"
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")

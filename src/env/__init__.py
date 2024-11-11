@@ -4,7 +4,7 @@ from importlib.machinery import ModuleSpec as _ModuleSpec
 from pathlib import Path as _Path
 from types import ModuleType as _ModuleType
 
-from .ctypes import *
+from .ptypes import *
 from .globales import *
 from .logger import *
 from .locales import flags, EnvInfo, EnvStates

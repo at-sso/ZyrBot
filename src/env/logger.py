@@ -5,7 +5,7 @@ import logging
 from icecream import ic
 
 from .locales import EnvStates, flags
-from .ctypes import *
+from .ptypes import *
 from .globales import *
 
 

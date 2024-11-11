@@ -1,7 +1,7 @@
 from src import ui
 from src.function_wrapper import f_wrapper
 from src.env import *
-from src.env.ctypes import *
+from env.ptypes import *
 
 
 __secrets = import_dot_folder(".secrets", "clownkey")

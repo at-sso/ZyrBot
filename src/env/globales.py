@@ -1,6 +1,6 @@
 import os
 
-from .ctypes import *
+from .ptypes import *
 from .locales import flags, EnvInfo
 
 ######################################################################################################

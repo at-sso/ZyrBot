@@ -4,7 +4,7 @@ from time import time as timer
 
 from .env.locales import EnvStates
 
-from .env.ctypes import *
+from .env.ptypes import *
 from .env.logger import logger as _logger, friendly as _friendly
 
 
