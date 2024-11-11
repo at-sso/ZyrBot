@@ -6,6 +6,8 @@ from src.env import *
 from src.env.globales import *
 from src.env.locales import flags, EnvStates
 
+from src.function_wrapper import f_wrapper
+
 
 class __DecryptionError(Exception):
     def __init__(self, s: object) -> None:
@@ -90,7 +92,9 @@ def init() -> None:
         logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
 
     __init_was_called = True
-    logger.debug(f"{friendly.full_name(get)}: {f_wrapper.init(get, decrypt=False)}")
+    logger.debug(
+        f"{friendly.full_name(get)}: {f_wrapper.init(get, decrypt=False).status}"
+    )
 
 
 def __get_encryption_type(f: str) -> str:
@@ -146,6 +150,7 @@ def get(decrypt: bool) -> str:
     if process.returncode != 0:
         raise __DecryptionError(f"Decryption failed: {error.decode().strip()}")
 
+    logger.info("Decryption success.")
     if decrypt:
         return decrypted_data.decode().strip()
     return EnvStates.success
