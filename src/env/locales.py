@@ -2,6 +2,7 @@ import os
 import platform
 import sys
 from icecream import ic
+from enum import Enum
 from datetime import datetime
 from rich.console import Console
 from rich.markdown import Markdown
@@ -9,7 +10,8 @@ from argparse import Action, ArgumentParser, Namespace
 
 from .ptypes import *
 
-_prog_name: LitStr = "Zyr-ChatBot"
+_ai_name: LitStr = "Zyr"
+_prog_name: str = f"{_ai_name}-ChatBot"
 _abspath: str = os.path.abspath(os.path.dirname(sys.argv[0])).replace("\\", "/")
 _logger_max: int = 1
 """AKA > 'loggerMaxBackup'"""
@@ -17,12 +19,12 @@ _logger_name: str = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.log"
 """AKA > 'loggerName'"""
 
 
-class EnvStates:
-    success: LitStr = "SUCCESS"
-    environment_error: LitStr = "ENVERROR"
-    unknown_value: LitStr = "BADVALUE"
-    unknown_type: LitStr = "BADTYPE"
-    unknown_location: LitStr = "BADLOCATION"
+class EnvStates(Enum):
+    success = "SUCCESS"
+    environment_error = "ENVERROR"
+    unknown_value = "BADVALUE"
+    unknown_type = "BADTYPE"
+    unknown_location = "BADLOCATION"
 
 
 class __ArgsHandler:
@@ -50,7 +52,7 @@ class __ArgsHandler:
 
         class __Helper:
             is_extraSecrets_set: bool = not (
-                self.extraSecret != EnvStates.unknown_value.encode("utf-32")
+                self.extraSecret != EnvStates.unknown_value.value.encode("utf-32")
             )
             is_loggerMaxBackup_set: bool = not (self.loggerMaxBackup > _logger_max)
             is_loggerName_set: bool = not (self.loggerName != _logger_name)
@@ -110,7 +112,7 @@ class __ArgsHandler:
         set_arg("-lactoseIntolerant", action="store_true", default=False)
         # API Key Configuration Flags
         set_arg("-doNotSaveMyKey", action="store_true", default=False)
-        set_arg("-extraSecret", type=str, default=EnvStates.unknown_value)
+        set_arg("-extraSecret", type=str, default=EnvStates.unknown_value.value)
         # Logger Configuration Flags
         set_arg("-noLogger", action="store_true", default=False)
         set_arg("-loggerShell", action="store_true", default=False)
@@ -126,17 +128,14 @@ class __ArgsHandler:
 flags = __ArgsHandler()
 
 
-class EnvInfo:
-    program_name: LitStr = _prog_name
-    current_path: str = _abspath
-    system: str = platform.system()
-    release: str = platform.release()
-    architecture: tuple[str, str] = platform.architecture()
-    compiler: str = platform.python_compiler()
-
-    def __repr__(self) -> str:
-        return f"{self.current_path}, {self.system}, {self.release}, {self.architecture}, {self.compiler}"
+class EnvInfo(Enum):
+    ai_name = _ai_name
+    program_name = _prog_name
+    current_path = _abspath
+    system = platform.system()
+    release = platform.release()
+    architecture = platform.architecture()
+    compiler = platform.python_compiler()
 
 
 ic(__ArgsHandler())
-ic(EnvInfo())

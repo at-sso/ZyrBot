@@ -6,7 +6,7 @@ from .locales import flags, EnvInfo
 ######################################################################################################
 # Absolute paths for commonly used directories.
 # Execution paths:
-CURRENT_PATH: str = EnvInfo.current_path
+CURRENT_PATH: str = EnvInfo.current_path.value
 """Absolute path to the execution folder.
 NOTE: Running this path from another directory (other than main.py) may cause unexpected behavior."""
 SOURCE_FOLDER: str = f"{CURRENT_PATH}/src"

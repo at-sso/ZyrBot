@@ -1,4 +1,3 @@
-import json
 import traceback as tb
 from time import time as timer
 
@@ -67,13 +66,13 @@ class __FunctionWrapper:
             # In case of exception, end the timer and log information.
             duration = finish()
             _logger.critical(
-                f"Unhandled exception raised in {func_name}; this operation took {duration}. Tb: \n{tb.format_exc()}"
+                f"Unhandled exception raised in {func_name}; this operation took {duration}. Tb:\n{tb.format_exc()}"
             )
             # If `reraise` is `True`, re-raise the exception that occurred in `f` after logging the tb.
             if reraise:
                 raise
             # If `reraise` is `False`, simply set status as an error.
-            self.status = EnvStates.environment_error
+            self.status = EnvStates.environment_error.value
             return self
 
         # In case of success (no exceptions) finish the timer, and log information.
@@ -120,29 +119,15 @@ class __FunctionWrapper:
                stores it in `self.func_results`.
 
         """
-        # Retrieve unique identifier for the function based on its signature or properties
-        func_info: str = _friendly.func_info(f)
         # Execute the function with exception handling and logging, capture results
-        self.handler(f, reraise=False, *args, **kwargs)
-
-        if self.status == EnvStates.environment_error:
-            # Explicitly set to unknown value if an environment error occurs
-            self.__func_results_helper[func_info] = EnvStates.unknown_value
-        elif self.status is None:
-            # If the function returned None, assign EnvStates.success as default
-            self.__func_results_helper[func_info] = EnvStates.success
-        else:
-            # For all other cases, store the status as is
-            self.__func_results_helper[func_info] = self.status
+        a = self.handler(f, reraise=False, *args, **kwargs)
 
         # Store the helper dictionary as a JSON-formatted string in `func_results`
-        self.get_results()
-        return self
+        self.func_results = _friendly.list_of_values(
+            self.__func_results_helper, a.status, EnvStates.unknown_value.value, f
+        )
 
-    def get_results(self) -> str:
-        """Get the formatted results in JSON."""
-        self.func_results = json.dumps(self.__func_results_helper, indent=4)
-        return self.func_results
+        return self
 
 
 f_wrapper = __FunctionWrapper()

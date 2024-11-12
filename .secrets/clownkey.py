@@ -53,13 +53,13 @@ def init() -> None:
     )
 
     # If the system is Windows, always try to install or update Gpg4win.
-    if EnvInfo.system == "Windows" and flags.noWinget:
+    if EnvInfo.system.value == "Windows" and flags.noWinget:
         logger.info("Trying to install 'Gpg4win'.")
         subprocess.run(["winget", "install", "--id", "GnuPG.Gpg4win"])
 
     # Handle password loading or prompting
     if not (__f_exists(PASSWORD_FILE_PATH) and flags.help.is_extraSecrets_set):
-        api_password: str | bytes = EnvStates.unknown_value
+        api_password: str | bytes = EnvStates.unknown_value.value
         logger.warning("Password file doesn't exist!")
         # This makes debugging a little more "save"; since the data is not being shown directly.
         api_password = getpass("API key password: ").encode("utf-32")
@@ -86,7 +86,7 @@ def init() -> None:
     logger.info(f"Checking encryption type of '{ENCRYPTED_KEY_FILE}'.")
     # Verify encryption type and validity of the encrypted file
     secret_type: str = __get_encryption_type(ENCRYPTED_KEY_FILE)
-    if secret_type == EnvStates.environment_error:
+    if secret_type == EnvStates.environment_error.value:
         logger.critical("Failed to retrieve encryption type.", exc=__DecryptionError)
     else:
         logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
@@ -113,7 +113,7 @@ def __get_encryption_type(f: str) -> str:
         return result.stdout
     except subprocess.CalledProcessError as e:
         logger.critical(e)
-        return EnvStates.environment_error
+        return EnvStates.environment_error.value
 
 
 def get(decrypt: bool) -> str:
@@ -153,4 +153,4 @@ def get(decrypt: bool) -> str:
     logger.info("Decryption success.")
     if decrypt:
         return decrypted_data.decode().strip()
-    return EnvStates.success
+    return EnvStates.success.value

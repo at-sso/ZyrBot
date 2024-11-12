@@ -1,8 +1,11 @@
 __all__ = ["logger", "friendly"]
 
 import os
+import json
 import logging
+import traceback
 from icecream import ic
+from enum import Enum
 
 from .locales import EnvStates, flags
 from .ptypes import *
@@ -16,7 +19,7 @@ class __LoggerHandler:
         logger has started.
         """
         self.logger: logging.Logger = logging.getLogger(__name__)
-        self.__logger_function: dict[int, Callable[[str], None]] = {
+        self.__logger_function: dict[int, Callable[[object], None]] = {
             logging.DEBUG: lambda x: self.logger.debug(x),
             logging.INFO: lambda x: self.logger.info(x),
             logging.WARNING: lambda x: self.logger.warning(x),
@@ -64,7 +67,7 @@ class __LoggerHandler:
             self.handler(logging.DEBUG, f"Max logger backup: {LOGGER_MAX_BACKUP}.")
 
     def handler(
-        self, logging_level: int, message: Any, exc: ExceptionType = Exception
+        self, logging_level: int, message: object, exc: ExceptionType = Exception
     ) -> None:
         """
         The function `__logger_message_handler` calls a specified function with a given argument.
@@ -89,7 +92,7 @@ _hdlr = __LoggerHandler()
 
 
 class __Logger:
-    def debug(self, message: Any) -> None:
+    def debug(self, message: object) -> None:
         """
         The function `debug` logs a debug message using a logger message handler.
 
@@ -98,7 +101,7 @@ class __Logger:
         """
         _hdlr.handler(logging.DEBUG, message)
 
-    def info(self, message: Any) -> None:
+    def info(self, message: object) -> None:
         """
         This function logs an informational message using a logger message handler.
 
@@ -107,7 +110,7 @@ class __Logger:
         """
         _hdlr.handler(logging.INFO, message)
 
-    def warning(self, message: Any) -> None:
+    def warning(self, message: object) -> None:
         """
         The `warning` function logs a warning message using a logger message handler.
 
@@ -116,7 +119,7 @@ class __Logger:
         """
         _hdlr.handler(logging.WARNING, message)
 
-    def error(self, message: Any, exc: ExceptionType = Exception) -> None:
+    def error(self, message: object, exc: ExceptionType = Exception) -> None:
         """
         The function `error` logs an error message using a logger message handler.
 
@@ -126,7 +129,7 @@ class __Logger:
         """
         _hdlr.handler(logging.ERROR, message, exc)
 
-    def critical(self, message: Any, exc: ExceptionType = Exception) -> None:
+    def critical(self, message: object, exc: ExceptionType = Exception) -> None:
         """
         This function logs a critical message using a logger message handler.
 
@@ -142,6 +145,15 @@ logger = __Logger()
 This instance is used for logging messages at different levels such as debug, 
 info, warning, error, and critical.
 """
+
+
+def _custom_serializer(obj: Any):
+    # Handle enums and other non-serializable objects
+    if isinstance(obj, Enum):
+        return obj.value
+    elif hasattr(obj, "__dict__"):
+        return __FriendlyLogger.full_name(obj)
+    return str(obj)  # Default to string representation
 
 
 class __FriendlyLogger:
@@ -166,7 +178,7 @@ class __FriendlyLogger:
         return f"id: {id(x)}"
 
     @staticmethod
-    def full_name(x: object, err: str = EnvStates.unknown_location) -> str:
+    def full_name(x: object, err: str = EnvStates.unknown_location.value) -> str:
         """
         Gets the fully qualified name of a function or variable.
 
@@ -186,7 +198,7 @@ class __FriendlyLogger:
         @param f: The variable to analyze.
         @return: A string with the full name, type, and unique identifier of the variable.
         """
-        return f"{self.var_type(f)}, {self.full_name(f)}, {self.unique_id(f)}"
+        return f"{self.full_name(f)}, {self.var_type(f)}, {self.unique_id(f)}"
 
     def func_info(self, f: GenericCallable) -> str:
         """
@@ -228,7 +240,7 @@ class __FriendlyLogger:
         @param key: The key to look for.
         @return: A formatted string of the key-value pair or "BADVALUE".
         """
-        err = EnvStates.unknown_value
+        err = EnvStates.unknown_value.value
         item = d.get(key, err)
         if item == err:
             return err
@@ -253,6 +265,50 @@ class __FriendlyLogger:
         """Show the iterator type and the contents. The contents are formatted to be readable and friendly."""
         content = [self.var_info(item) for item in it]
         return f"Iterable {self.var_type(it)} = {content}"
+
+    def list_of_values(
+        self,
+        content: GenericKeyMap,
+        given_var: object,
+        err: object,
+        *args: object,
+    ) -> str:
+        """
+        Populates the `content` dictionary with the status of each variable or callable in `args`.
+
+        This function iterates over a list of variables or callables (`args`) and assigns each
+        a corresponding status in the `content` dictionary based on its value:
+            - If the variable is `None`, it is assigned `EnvStates.success`.
+            - If the variable matches the provided `err` value, it is assigned `EnvStates.unknown_value`.
+            - Otherwise, the variable's own value is stored as its status.
+
+        @param content (GenericKeyMap): A dictionary to store the statuses of variables or callables.
+        @param err (object): A value representing an error state. If a variable in `args` matches this value, it is assigned `EnvStates.unknown_value`.
+        @param *args (object): A list of variables or callable functions whose statuses will be stored in `content`.
+
+        Returns:
+            str: A JSON-formatted string representing the `content` dictionary, with the statuses of each variable.
+        """
+        for var in args:
+            value_name: str = self.var_info(var)
+            if given_var is None:
+                # If the function returned None, assign EnvStates.success as default
+                content[value_name] = EnvStates.success.value
+            elif given_var == err:
+                # Explicitly set to unknown value if an error occurs
+                content[value_name] = EnvStates.unknown_value.value
+            else:
+                # For all other cases, store the status as is
+                content[value_name] = given_var
+
+        # Get the formatted results in JSON.
+        return json.dumps(content, indent=4, default=_custom_serializer)
+
+    def list_of_values1(self, var: object, err: object, *args: object) -> str:
+        return self.list_of_values({}, var, err, *args)
+
+    def list_of_values2(self, *args: object) -> str:
+        return self.list_of_values({}, self, self, *args)
 
 
 friendly = __FriendlyLogger()
