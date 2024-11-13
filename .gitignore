@@ -1,6 +1,5 @@
 # Env folders:
 .vs
-.vscode
 .idea
 .venv
 win_venv
@@ -14,4 +13,3 @@ __pycache__
 # Private files:
 .secrets/**
 !clownkey.py
-!crypto_miner.py
