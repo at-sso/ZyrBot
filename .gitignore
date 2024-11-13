@@ -1,5 +1,6 @@
 # Env folders:
 .vs
+.vscode
 .idea
 .venv
 win_venv
