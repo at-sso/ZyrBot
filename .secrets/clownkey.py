@@ -35,7 +35,7 @@ if not __f_exists(ENCRYPTED_KEY_FILE):
         f"An encrypted API key was not found in: '{SECRETS_FOLDER}'!\n"
         "You can only (and must) use encrypted files in this environment. "
         "Please check the documentation for more information.",
-        exc=FileNotFoundError,
+        exc=FileNotFoundError if not flags.deadInternet else Exception,
     )
 else:
     with open(ENCRYPTED_KEY_FILE, "rb") as f:
