@@ -1,4 +1,4 @@
-from src.ui import UserInterface, ft
+from src.ui import interface_main, ft
 from src.function_wrapper import f_wrapper
 from src.env import *
 from src.env.ptypes import *
@@ -12,7 +12,12 @@ def main() -> str:
         # Start the key manager handling.
         f_wrapper.init(__secrets.init)
         # Start Flet engine and UI.
-        f_wrapper.init(f=ft.app, target=UserInterface)
+        f_wrapper.init(
+            f=ft.app,
+            target=interface_main,
+            name=EnvInfo.program_name.value,
+            assets_dir="assets",
+        )
     finally:
         results: str = f_wrapper.func_results
         logger.debug(

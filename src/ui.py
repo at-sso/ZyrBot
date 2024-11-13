@@ -1,93 +1,122 @@
+import uuid
+from icecream import ic
 import flet as ft
+from flet import Text, Page, ControlEvent, Control
 
-from .env.ptypes import *
-from .env.locales import *
-from .env.logger import *
+from .env import *
+from .command_handler import CommandsHandler
 
 
-class UserInterface:
-    def __init__(self, page: ft.Page) -> None:
-        """
-        Initializes the ChatApp with the main page and sets up the initial UI elements.
-        """
-        self.page = page
-        self.user_name: Any = None
+class Message:
+    def __init__(self, user: str, text: str, type: str) -> None:
+        self.user = user
+        self.text = text
+        self.type = type
 
-        logger.info("Initializing UI.")
-        # Set up the page properties
-        self.page.title = EnvInfo.program_name.value
-        self.page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-        self.page.scroll = ft.ScrollMode.AUTO
 
-        # Initialize the message display area and input controls
-        self.message_display = ft.Column(scroll=ft.ScrollMode.AUTO)
-        self.message_input = ft.TextField(
-            hint_text="Enter message", expand=True, on_submit=self.send_message
-        )
-        self.send_button = ft.IconButton(icon=ft.icons.SEND, on_click=self.send_message)
+USERNAME_TYPE = "user_name"
+CHAT_TYPE = "chat_message"
+LOGIN_TYPE = "login_message"
 
-        # Display the username prompt dialog at the start of the program
-        self.page.dialog = ft.AlertDialog(
-            title=ft.Text("Enter your username"),
-            content=ft.TextField(on_submit=self.set_user_name),
-            actions=[ft.TextButton("Submit", on_click=self.set_user_name)],
-        )
-        self.page.dialog.open = True
-        self.page.update()
 
-    def set_user_name(self, e: Any = None) -> None:
-        """
-        Sets the user's name based on input and initializes the main chat UI.
+def interface_main(page: Page) -> str:
+    # Helpers
+    _i_was_called = lambda f: friendly.i_was_called(f, log=True)
+    """Logs relevant information about every function that is being called."""
+    _i_was_called(interface_main)
 
-        @param e: Event that triggered the function (optional). Used to retrieve the entered username.
-        """
-        # Get the user's input from the dialog
-        self.user_name = e.control if e else None
-        if self.user_name:
-            # Close the dialog and initialize the main chat area
-            self.page.dialog.open = False
-            self.page.add(
-                self.message_display, ft.Row([self.message_input, self.send_button])
+    user_name = ft.TextField(label="Enter your username.")
+    """User name placeholder."""
+    chat = ft.Column()
+    """Chat list"""
+    chat_controls: list[Control] = chat.controls
+    """Pointer to `chat.controls`"""
+    new_msg = ft.TextField()
+    """New message placeholder"""
+
+    _new_text: StringCallback = lambda s: chat_controls.append(Text(s))
+    _new_alert_text: StringCallback = lambda s: chat_controls.append(
+        Text(s, italic=True, color=ft.colors.BLACK45, size=12)
+    )
+    """Set a new text into the chat"""
+    _cmd_handler = CommandsHandler(page=page, chat=chat)
+    """Command handler"""
+    _cmd_handler.alert_chat = _new_alert_text
+
+    _user_id: Any = page.client_storage.get("user_id")
+    """Retrieve a unique user ID for each session"""
+    if not _user_id:
+        # Generate a new unique ID
+        _user_id = str(uuid.uuid4())
+        # Store it in client storage
+        page.client_storage.set("user_id", _user_id)
+
+    def on_message(msg: Message) -> None:
+        """Handles *literally* the entire chat."""
+        _i_was_called(on_message)
+        _: str = f"{msg.user}: {msg.text}"
+        logger.info(f"{msg.type} | {msg.text}")
+        if msg.type == CHAT_TYPE:
+            _new_text(_)
+        elif msg.type == LOGIN_TYPE:
+            _new_alert_text(msg.text)
+        page.update()
+
+    def send_click(e: ControlEvent) -> None:
+        """Send button function, this function also handles possible commands."""
+        _i_was_called(send_click)
+        msg_text: str = new_msg.value.strip()  # type: ignore[reportOptionalMemberAccess]
+
+        if _cmd_handler.is_a_command(msg_text):
+            val = _cmd_handler.execute(msg_text).status
+            ic(val)
+            if val == EnvStates.exit_on_command:
+                return  # TODO
+            else:
+                val()  # type: ignore[reportCallIssue]
+
+        page.pubsub.send_all(
+            Message(
+                user=page.session.get(USERNAME_TYPE),  # type: ignore[reportArgumentType]
+                text=new_msg.value,  # type: ignore[reportArgumentType]
+                type=CHAT_TYPE,
             )
-            self.page.update()
-
-    def send_message(self, e: Any = None) -> None:
-        """
-        Handles sending a message from the user and generating an AI response.
-
-        @param e: Event that triggered the function (optional).
-        """
-        user_message = self.message_input.value.strip()
-        if user_message:
-            # Display the user's message in the chat display area
-            self.add_message(self.user_name, user_message)
-
-            # Get the AI response and display it
-            ai_response = self.get_ai_response(user_message)
-            self.add_message(EnvInfo.ai_name.value, ai_response)
-
-            # Clear the input field for the next message
-            self.message_input.value = ""
-            self.page.update()
-
-    def add_message(self, sender: str, message: str) -> None:
-        """
-        Adds a message bubble to the chat display area with the sender's name and message.
-
-        @param sender (str): The name of the message sender (e.g., "User" or "AI").
-        @param message (str): The text content of the message to display.
-        """
-        # Format and add a row with the sender's name and message text
-        self.message_display.controls.append(
-            ft.Row([ft.Text(sender, weight=ft.FontWeight.BOLD), ft.Text(message)])
         )
+        new_msg.value = ""
+        page.update()
 
-    def get_ai_response(self, user_message: str) -> str:
-        """
-        Generates a response from the AI to the user's message. Not yet implemented.
+    def join_click(e: ControlEvent) -> None:
+        """Join chat interaction, this handles the username generally."""
+        _i_was_called(join_click)
+        if not user_name.value:
+            user_name.error_text = "Name cannot be blank!"
+            user_name.update()
+        else:
+            page.session.set(USERNAME_TYPE, user_name.value)
+            page.dialog.open = False  # type: ignore
+            page.pubsub.send_all(
+                Message(
+                    user=user_name.value,
+                    text=f"{user_name.value} has joined the chat.",
+                    type="login_message",
+                )
+            )
+            page.update()
 
-        @param user_message (str): The message from the user that the AI should respond to.
-        @param str: The AI's response message.
-        """
-        # Placeholder for AI response logic - TODO: Replace this with real AI response in the future
-        return "NotImplementedError"  # AI response generation not yet implemented
+    logger.info("Initializing UI.")
+
+    page.pubsub.subscribe(on_message)
+    page.dialog = ft.AlertDialog(
+        open=True,
+        modal=True,
+        title=Text("Hello!"),
+        content=ft.Column([user_name], tight=True),
+        actions=[ft.ElevatedButton(text="Join chat", on_click=join_click)],
+        actions_alignment="end",  # type: ignore[reportArgumentType]
+    )
+    page.add(
+        chat,
+        ft.Row(controls=[new_msg, ft.ElevatedButton(text="Send", on_click=send_click)]),
+    )
+
+    return EnvStates.success.value

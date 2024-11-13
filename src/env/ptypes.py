@@ -32,6 +32,7 @@ class CallableConstructor(Generic[_P, _R]):
 
 # Callables
 GenericCallable = Callable[..., Any]
+StringCallback = Callable[[str], None]
 
 # Lists
 GenericList = list[Any]

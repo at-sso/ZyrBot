@@ -21,6 +21,7 @@ _logger_name: str = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.log"
 
 class EnvStates(Enum):
     success = "SUCCESS"
+    exit_on_command = "CMDEXIT"
     environment_error = "ENVERROR"
     unknown_value = "BADVALUE"
     unknown_type = "BADTYPE"
@@ -41,6 +42,7 @@ class __ArgsHandler:
         # API Key Configuration Flags
         self.doNotSaveMyKey: bool = not self.__a.doNotSaveMyKey
         self.extraSecret: bytes = self.__a.extraSecret.encode("utf-32")
+        self.deadInternet: bool = not self.__a.deadInternet
         # Logger Configuration Flags
         self.noLogger: bool = self.__a.noLogger
         self.loggerShell: bool = self.__a.loggerShell
@@ -75,6 +77,7 @@ class __ArgsHandler:
         global _abspath
 
         class MarkdownFormatter(Action):
+            # Shout-out chatgpt because I have no idea on how this works
             def __init__(
                 self, option_strings, dest, nargs=0, help_file_path=None, **kwargs  # type: ignore
             ) -> None:
@@ -113,6 +116,7 @@ class __ArgsHandler:
         # API Key Configuration Flags
         set_arg("-doNotSaveMyKey", action="store_true", default=False)
         set_arg("-extraSecret", type=str, default=EnvStates.unknown_value.value)
+        set_arg("-deadInternet", action="store_false", default=True)
         # Logger Configuration Flags
         set_arg("-noLogger", action="store_true", default=False)
         set_arg("-loggerShell", action="store_true", default=False)

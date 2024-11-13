@@ -47,6 +47,12 @@ def init() -> None:
     Initializes the environment by setting up passwords, checking for dependencies,
     and ensuring encryption requirements are met.
     """
+    if flags.deadInternet:
+        logger.warning(
+            f"Flag 'deadInternet' detected. API key retrieval is impossible. Function '{friendly.full_name(get)}' will terminate the program."
+        )
+        return
+
     global __init_was_called
     logger.info(
         "GPG might ask for your passphrase from time to time. This is normal behavior!"
@@ -130,7 +136,7 @@ def get(decrypt: bool) -> str:
     """
     if not __init_was_called:
         raise __KeyManagerNotInitialized(
-            f"Operation: {friendly.full_name(init)} was not called."
+            f"Operation: {friendly.full_name(init)} was not initialized."
         )
 
     process = subprocess.Popen(

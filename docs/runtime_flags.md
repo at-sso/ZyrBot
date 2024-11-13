@@ -30,6 +30,7 @@ Runtime flags provide a flexible way to tailor your usage to your specific needs
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | **`-doNotSaveMyKey`** | This flag disables the automatic saving of your decrypted API key password. If this flag is enabled and the `password.txt` file exists, it will be deleted.                                                                                                                                                                                      | `False`       |
 | **`-extraSecret`**    | Allows you to enter your API key password in the terminal. Although not needed, when used in conjunction with the `-doNotSaveMyKey` flag, this flag allows you to enter your API key password in the terminal each time you run the script. This ensures that your key remains secure and is not stored in plain text anywhere in your computer. | `"str"`       |
+| **`-deadInternet`**   | Disables the AI functionality, you can disable this to skip the decryption step.                                                                                                                                                                                                                                                                 | `True`        |
 
 ### Logger Configuration Flags
 
@@ -39,7 +40,7 @@ Runtime flags provide a flexible way to tailor your usage to your specific needs
 | **`-loggerShell`**     | Prevents logs from being displayed in the terminal. Logged data will only be saved to a file if the `noSaveLogger` flag is not set.               | `False`       |
 | **`-noSaveLogger`**    | Prevents logs from being saved to a file. Logs will only be displayed in the terminal if the `loggerShell` flag is set.                           | `False`       |
 | **`-loggerMaxBackup`** | Specifies the maximum number of log files to retain in the logger directory. Older files will be automatically removed when the limit is reached. | `5`           |
-| **`-loggerName`**      | Specifies the logger name.                                                                                                                        | Current date  |
+| **`-loggerName`**      | Specifies a custom logger name.                                                                                                                   | Current date  |
 
 ### UI Configuration Flags
 

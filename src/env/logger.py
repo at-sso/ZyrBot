@@ -147,7 +147,7 @@ info, warning, error, and critical.
 """
 
 
-def _custom_serializer(obj: Any):
+def _custom_serializer(obj: Any) -> Any | str:
     # Handle enums and other non-serializable objects
     if isinstance(obj, Enum):
         return obj.value
@@ -158,31 +158,31 @@ def _custom_serializer(obj: Any):
 
 class __FriendlyLogger:
     @staticmethod
-    def var_type(x: object) -> str:
+    def var_type(v: object) -> str:
         """
         Determines the type of a variable.
 
         @param x: The variable whose type is to be determined.
         @return: The name of the type as a string.
         """
-        return f"({type(x).__name__})"
+        return f"({type(v).__name__})"
 
     @staticmethod
-    def unique_id(x: object) -> str:
+    def unique_id(v: object) -> str:
         """
         Generates a unique identifier string for a given variable.
 
         @param x: The variable to generate the identifier for.
         @return: A string representing the unique memory address of the variable.
         """
-        return f"id: {id(x)}"
+        return f"id: {id(v)}"
 
     @staticmethod
     def full_name(x: object, err: str = EnvStates.unknown_location.value) -> str:
         """
-        Gets the fully qualified name of a function or variable.
+        Gets the fully qualified name of a callable or variable.
 
-        @param x: The function or variable.
+        @param x: The callable or variable.
         @param err (optional): Error name.
         @return: The fully qualified name or `err` if the qualified name is unknown.
         """
@@ -191,23 +191,23 @@ class __FriendlyLogger:
         except AttributeError:
             return err
 
-    def var_info(self, f: object) -> str:
+    def var_info(self, v: object) -> str:
         """
         Provides detailed information about a variable including its type, class, and unique identifier.
 
         @param f: The variable to analyze.
         @return: A string with the full name, type, and unique identifier of the variable.
         """
-        return f"{self.full_name(f)}, {self.var_type(f)}, {self.unique_id(f)}"
+        return f"{self.full_name(v)}, {self.var_type(v)}, {self.unique_id(v)}"
 
     def func_info(self, f: GenericCallable) -> str:
         """
-        Provides detailed information about a function including its class and unique identifier.
+        Provides detailed information about a callable including its class and unique identifier.
 
-        @param f: The function to analyze.
-        @return: A string with the full name and unique identifier of the function.
+        @param f: The callable to analyze.
+        @return: A string with the full name and unique identifier of the callable.
         """
-        return f"{self.full_name(f)}, {self.unique_id(f)}"
+        return f"{self.full_name(f, f.__name__)}, {self.unique_id(f)}"
 
     @staticmethod
     def map_keys(d: GenericMap) -> str:
@@ -290,25 +290,39 @@ class __FriendlyLogger:
             str: A JSON-formatted string representing the `content` dictionary, with the statuses of each variable.
         """
         for var in args:
-            value_name: str = self.var_info(var)
+            name: str = self.var_info(var)
             if given_var is None:
                 # If the function returned None, assign EnvStates.success as default
-                content[value_name] = EnvStates.success.value
+                content[name] = EnvStates.success.value
             elif given_var == err:
                 # Explicitly set to unknown value if an error occurs
-                content[value_name] = EnvStates.unknown_value.value
+                content[name] = EnvStates.unknown_value.value
             else:
                 # For all other cases, store the status as is
-                content[value_name] = given_var
+                content[name] = given_var
 
         # Get the formatted results in JSON.
         return json.dumps(content, indent=4, default=_custom_serializer)
 
-    def list_of_values1(self, var: object, err: object, *args: object) -> str:
-        return self.list_of_values({}, var, err, *args)
+    def list_of_generic_values(self, *args: object) -> str:
+        _: GenericKeyMap = {}
+        for var in args:
+            name: str = f"{self.var_type(var)}, {self.unique_id(var)}"
+            _[name] = str(var)
+        return json.dumps(_, indent=4, default=_custom_serializer)
 
-    def list_of_values2(self, *args: object) -> str:
-        return self.list_of_values({}, self, self, *args)
+    def i_was_called(self, f: GenericCallable, log: bool = False) -> str:
+        """
+        Returns a string representation of a callable being called.
+
+        @param f: The callable to analyze.
+        @param log: Allows this function to log at level 'INFO' the returned message.
+        @return: A string with the full name and unique identifier of the callable being called.
+        """
+        _: str = f"Callable '{self.full_name(f, f.__name__)}' was called."
+        if log:
+            logger.info(_)
+        return _
 
 
 friendly = __FriendlyLogger()
