@@ -110,14 +110,14 @@ class __Logger:
         """
         _hdlr.handler(logging.INFO, message)
 
-    def warning(self, message: object) -> None:
+    def warning(self, message: object, exc: ExceptionType = Exception) -> None:
         """
         The `warning` function logs a warning message using a logger message handler.
 
         @param message The `message` parameter in the `info` warning is a string that represents the
         message to be logged at the 'WARNING' level.
         """
-        _hdlr.handler(logging.WARNING, message)
+        _hdlr.handler(logging.WARNING, message, exc)
 
     def error(self, message: object, exc: ExceptionType = Exception) -> None:
         """

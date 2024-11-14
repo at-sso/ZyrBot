@@ -1,3 +1,4 @@
+from enum import Enum
 import uuid
 from icecream import ic
 import flet as ft
@@ -7,16 +8,17 @@ from .env import *
 from .command_handler import CommandsHandler
 
 
+class MessageType(Enum):
+    USERNAME = "user_name"
+    CHAT = "chat_message"
+    LOGIN = "login_message"
+
+
 class Message:
-    def __init__(self, user: str, text: str, type: str) -> None:
+    def __init__(self, user: str, text: str, type: MessageType) -> None:
         self.user = user
         self.text = text
         self.type = type
-
-
-USERNAME_TYPE = "user_name"
-CHAT_TYPE = "chat_message"
-LOGIN_TYPE = "login_message"
 
 
 def interface_main(page: Page) -> str:
@@ -56,9 +58,9 @@ def interface_main(page: Page) -> str:
         _i_was_called(on_message)
         _: str = f"{msg.user}: {msg.text}"
         logger.info(f"{msg.type} | {msg.text}")
-        if msg.type == CHAT_TYPE:
+        if msg.type == MessageType.CHAT:
             _new_text(_)
-        elif msg.type == LOGIN_TYPE:
+        elif msg.type == MessageType.LOGIN:
             _new_alert_text(msg.text)
         page.update()
 
@@ -71,15 +73,16 @@ def interface_main(page: Page) -> str:
             val = _cmd_handler.execute(msg_text).status
             ic(val)
             if val == EnvStates.exit_on_command:
-                return  # TODO
+                # TODO
+                logger.warning("Exit on command was called!", NotImplementedError)
             else:
                 val()  # type: ignore[reportCallIssue]
 
         page.pubsub.send_all(
             Message(
-                user=page.session.get(USERNAME_TYPE),  # type: ignore[reportArgumentType]
+                user=page.session.get(MessageType.USERNAME.value),  # type: ignore[reportArgumentType]
                 text=new_msg.value,  # type: ignore[reportArgumentType]
-                type=CHAT_TYPE,
+                type=MessageType.CHAT,
             )
         )
         new_msg.value = ""
@@ -89,16 +92,16 @@ def interface_main(page: Page) -> str:
         """Join chat interaction, this handles the username generally."""
         _i_was_called(join_click)
         if not user_name.value:
-            user_name.error_text = "Name cannot be blank!"
+            user_name.error_text = "Your username cannot be blank!"
             user_name.update()
         else:
-            page.session.set(USERNAME_TYPE, user_name.value)
+            page.session.set(MessageType.USERNAME.value, user_name.value)
             page.dialog.open = False  # type: ignore
             page.pubsub.send_all(
                 Message(
                     user=user_name.value,
                     text=f"{user_name.value} has joined the chat.",
-                    type="login_message",
+                    type=MessageType.LOGIN,
                 )
             )
             page.update()

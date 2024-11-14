@@ -1,4 +1,4 @@
-from flet import Page, Column
+from flet import Page, Column, Text
 from icecream import ic
 
 from .env import *
@@ -15,6 +15,7 @@ class CommandsHandler:
         self.__handler: dict[str, GenericCallable] = {
             "exit": lambda: EnvStates.exit_on_command,
             "clear": lambda: self.__clear,
+            "log.chat": lambda: self.__log_chat,
         }
 
         logger.info(f"Setting up '{friendly.full_name(CommandsHandler)}'")
@@ -43,3 +44,14 @@ class CommandsHandler:
     def __clear(self) -> None:
         self.chat.controls.clear()
         self.__new_message_alert("Chat cleared!")
+
+    def __log_chat(self) -> None:
+        _: str = "Log chat was used!"
+        for val in self.chat.controls:
+            # Only log values from the `Text` class
+            if isinstance(val, Text):
+                chat_val: Optional[str] = val.value
+                _ += f"\n{str(chat_val) if chat_val is None else chat_val}"
+            # else, do nothing and continue.
+        logger.debug(_)
+        logger.warning("Cleared messages won't be logged.")
