@@ -3,7 +3,6 @@ __all__ = ["logger", "friendly"]
 import os
 import json
 import logging
-import traceback
 from icecream import ic
 from enum import Enum
 

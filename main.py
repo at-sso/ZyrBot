@@ -1,4 +1,4 @@
-from src.ui import interface_main, ft
+from src.ui import Interface, ft
 from src.function_wrapper import f_wrapper
 from src.env import *
 from src.env.ptypes import *
@@ -14,7 +14,7 @@ def main() -> str:
         # Start Flet engine and UI.
         f_wrapper.init(
             f=ft.app,
-            target=interface_main,
+            target=Interface,
             name=EnvInfo.program_name.value,
             assets_dir="assets",
         )

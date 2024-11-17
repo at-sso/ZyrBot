@@ -25,16 +25,22 @@ class CommandsHandler:
         logger.debug(self.__handler.keys())
 
     def is_a_command(self, command: str) -> bool:
-        _ = self.__handler.get(command, self)
-        ic(_)
-        if not _ is self and command.startswith(self.__starter):
+        handler = self.__handler.get(command, self)
+        ic(handler)
+
+        # If `handler` is not equal to `self` and starts with `starter`
+        if not handler is self and command.startswith(self.__starter):
             return True
         return False
 
     def execute(self, command: str):
-        _ = self.__handler.get(command, lambda: False)
-        ic(_)
-        return f_wrapper.init(_)
+        handler = self.__handler.get(command, lambda: False)
+        ic(handler)
+
+        # Execute the handler if it is valid, otherwise raise an exception
+        if handler == Callable[[], False]:
+            raise RuntimeError(f"The command {command} is not valid!")
+        return f_wrapper.init(handler)
 
     def __new_message_alert(self, s: str) -> None:
         if not self.alert_chat is None:
