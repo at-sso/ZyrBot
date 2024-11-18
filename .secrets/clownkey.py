@@ -9,12 +9,12 @@ from src.env.locales import flags, EnvStates
 from src.function_wrapper import f_wrapper
 
 
-class __DecryptionError(Exception):
+class __DecryptionError(BaseException):
     def __init__(self, s: object) -> None:
         super().__init__(s)
 
 
-class __KeyManagerNotInitialized(Exception):
+class __KeyManagerNotInitialized(BaseException):
     def __init__(self, s: object) -> None:
         super().__init__(s)
 
@@ -160,3 +160,8 @@ def get(decrypt: bool) -> str:
     if decrypt:
         return decrypted_data.decode().strip()
     return EnvStates.success.value
+
+
+def was_initialized() -> bool:
+    logger.debug(f"{friendly.full_name(was_initialized)}: {__init_was_called}")
+    return __init_was_called

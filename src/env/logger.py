@@ -66,7 +66,7 @@ class __LoggerHandler:
             self.handler(logging.DEBUG, f"Max logger backup: {LOGGER_MAX_BACKUP}.")
 
     def handler(
-        self, logging_level: int, message: object, exc: ExceptionType = Exception
+        self, logging_level: int, message: object, exc: ExceptionType = None
     ) -> None:
         """
         The function `__logger_message_handler` calls a specified function with a given argument.
@@ -83,7 +83,7 @@ class __LoggerHandler:
             print(logging.getLevelName(logging_level) + " |", message)
         self.__logger_function[logging_level](message)
 
-        if exc != Exception:
+        if exc != None:
             raise exc(message)
 
 
@@ -109,32 +109,33 @@ class __Logger:
         """
         _hdlr.handler(logging.INFO, message)
 
-    def warning(self, message: object, exc: ExceptionType = Exception) -> None:
+    def warning(self, message: object, exc: ExceptionType = None) -> None:
         """
         The `warning` function logs a warning message using a logger message handler.
 
         @param message The `message` parameter in the `info` warning is a string that represents the
         message to be logged at the 'WARNING' level.
+        @param exc Allows you to force an exception of any type.
         """
         _hdlr.handler(logging.WARNING, message, exc)
 
-    def error(self, message: object, exc: ExceptionType = Exception) -> None:
+    def error(self, message: object, exc: ExceptionType = None) -> None:
         """
         The function `error` logs an error message using a logger message handler.
 
         @param message The `message` parameter in the `error` method is an object that represents the
         message to be logged at the 'ERROR' level.
-        @param exc Allows you to force an exception of any type besides the base class 'Exception'.
+        @param exc Allows you to force an exception of any type.
         """
         _hdlr.handler(logging.ERROR, message, exc)
 
-    def critical(self, message: object, exc: ExceptionType = Exception) -> None:
+    def critical(self, message: object, exc: ExceptionType = None) -> None:
         """
         This function logs a critical message using a logger message handler.
 
         @param message The `message` parameter in the `critical` method is an object that represents the
         message to be logged at the 'CRITICAL' level.
-        @param exc Allows you to force an exception of any type besides the base class 'Exception'.
+        @param exc Allows you to force an exception of any type.
         """
         _hdlr.handler(logging.CRITICAL, message, exc)
 

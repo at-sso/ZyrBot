@@ -36,17 +36,19 @@ StringCallback = Callable[[Optional[str]], None]
 
 # Lists
 GenericList = list[Any]
-StrList = list[str]
+StringList = list[str]
 
 # Maps
 GenericMap = dict[Any, Any]
 GenericKeyMap = dict[str, Any]
+StringMap = dict[str, str]
+NestedStringMap = dict[str, StringMap]
 
 # Tuple
 GenericTuple = tuple[Any, ...]
 TupleIntInt = tuple[int, int]
 
 # Custom
-ExceptionType = type[Exception]
+ExceptionType = Optional[type[Exception]]
 FunctionSignature = tuple[GenericCallable, GenericList, GenericKeyMap]
 FunctionSignatureDetails = tuple[str, *FunctionSignature]

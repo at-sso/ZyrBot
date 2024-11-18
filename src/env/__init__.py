@@ -10,6 +10,14 @@ from .logger import *
 from .locales import flags, EnvInfo, EnvStates
 
 
+class BaseException(Exception):
+    def __init__(self, s: object, name: Optional[str] = None) -> None:
+        logger.critical(
+            f"{name if name != None else EnvStates.unknown_location.value}: {s}"
+        )
+        super().__init__(s)
+
+
 def import_dot_folder(folder_name: LitStr, module_name: LitStr) -> _ModuleType:
     # Locate the .dot folder path
     dot_folder_path: _Path = _Path(folder_name).resolve()
@@ -27,3 +35,7 @@ def import_dot_folder(folder_name: LitStr, module_name: LitStr) -> _ModuleType:
     spec.loader.exec_module(module)  # type: ignore[reportOptionalMemberAccess]
 
     return module
+
+
+secrets = import_dot_folder(".secrets", "clownkey")
+"""Secrets!"""

@@ -3,14 +3,13 @@ from src.function_wrapper import f_wrapper
 from src.env import *
 from src.env.ptypes import *
 
-
-__secrets = import_dot_folder(".secrets", "clownkey")
+from src.ai.gemini import *
 
 
 def main() -> str:
     try:
         # Start the key manager handling.
-        f_wrapper.init(__secrets.init)
+        f_wrapper.init(secrets.init)
         # Start Flet engine and UI.
         f_wrapper.init(
             f=ft.app,

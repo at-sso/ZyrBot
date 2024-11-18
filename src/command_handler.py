@@ -1,4 +1,4 @@
-from flet import Page, Column, Text
+from flet import Page, ListView, Text
 from icecream import ic
 
 from .env import *
@@ -6,39 +6,42 @@ from .function_wrapper import f_wrapper
 
 
 class CommandsHandler:
-    def __init__(self, page: Page, chat: Column) -> None:
+    def __init__(self, page: Page, chat: ListView) -> None:
         self.page = page
         self.chat = chat
 
         self.alert_chat: Optional[StringCallback] = None
-        self.__starter: LitStr = "/"
+        self.starter: LitStr = "/"
         self.__handler: dict[str, GenericCallable] = {
             "exit": lambda: EnvStates.exit_on_command,
             "clear": lambda: self.__clear,
-            "log.chat": lambda: self.__log_chat,
+            "logchat": lambda: self.__logchat,
         }
 
         logger.info(f"Setting up '{friendly.full_name(CommandsHandler)}'")
         for key in list(self.__handler):
-            self.__handler[f"{self.__starter}{key}"] = self.__handler[key]
+            self.__handler[f"{self.starter}{key}"] = self.__handler[key]
             del self.__handler[key]
         logger.debug(self.__handler.keys())
 
     def is_a_command(self, command: str) -> bool:
-        handler = self.__handler.get(command, self)
-        ic(handler)
+        """check if the command starts with 'self.starter'."""
+        # handler = self.__handler.get(command, self)
+        # ic(handler)
 
         # If `handler` is not equal to `self` and starts with `starter`
-        if not handler is self and command.startswith(self.__starter):
-            return True
-        return False
+        # if not handler is self and :
+        #    return True
+
+        # Simply check if the text starts with '/', the UI should be able to handle errors already.
+        return command.startswith(self.starter)
 
     def execute(self, command: str):
-        handler = self.__handler.get(command, lambda: False)
+        handler = self.__handler.get(command, None)
         ic(handler)
 
         # Execute the handler if it is valid, otherwise raise an exception
-        if handler == Callable[[], False]:
+        if handler == None:
             raise RuntimeError(f"The command {command} is not valid!")
         return f_wrapper.init(handler)
 
@@ -51,7 +54,7 @@ class CommandsHandler:
         self.chat.controls.clear()
         self.__new_message_alert("Chat cleared!")
 
-    def __log_chat(self) -> None:
+    def __logchat(self) -> None:
         _: str = "Log chat was used!"
         for val in self.chat.controls:
             # Only log values from the `Text` class
