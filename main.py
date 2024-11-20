@@ -30,5 +30,5 @@ if __name__ == "__main__":
     end_status = f_wrapper.handler(main).status
     main_name = friendly.func_info(main)
     if end_status == EnvStates.environment_error.value:
-        logger.error(f"An unknown error ocurred while handling '{main_name}'.")
+        logger.error(f"An unknown error occurred while handling '{main_name}'.")
     logger.debug(f"{main_name}, returned: {end_status}")

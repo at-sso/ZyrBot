@@ -11,7 +11,7 @@ from .locales import flags, EnvInfo, EnvStates
 
 
 class BaseException(Exception):
-    def __init__(self, s: object, name: Optional[str] = None) -> None:
+    def __init__(self, s: object, name: Optional[object] = None) -> None:
         logger.critical(
             f"{name if name != None else EnvStates.unknown_location.value}: {s}"
         )

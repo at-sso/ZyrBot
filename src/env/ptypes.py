@@ -1,3 +1,5 @@
+from PIL.ImageFile import ImageFile
+from google.generativeai.types.generation_types import GenerateContentResponse
 from collections.abc import (
     Callable,
     Iterable,
@@ -15,6 +17,7 @@ from typing_extensions import (
     NoReturn,
     Self,
     Type,
+    Sized,
 )
 
 # Type constructors:
@@ -37,6 +40,7 @@ StringCallback = Callable[[Optional[str]], None]
 # Lists
 GenericList = list[Any]
 StringList = list[str]
+MediaList = list[str | ImageFile]
 
 # Maps
 GenericMap = dict[Any, Any]
@@ -52,3 +56,5 @@ TupleIntInt = tuple[int, int]
 ExceptionType = Optional[type[Exception]]
 FunctionSignature = tuple[GenericCallable, GenericList, GenericKeyMap]
 FunctionSignatureDetails = tuple[str, *FunctionSignature]
+NullableContentResponse = Optional[GenerateContentResponse]
+MediaElement = str | ImageFile | MediaList
