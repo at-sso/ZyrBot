@@ -1,10 +1,9 @@
-import json
 import google.generativeai as genai
 from icecream import ic
+from proto import Message
 
 from .exc import *
 from ..env import *
-import PIL.Image
 
 
 def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:
@@ -47,31 +46,28 @@ class GeminiModel:
         - "DESCRIPTION": A brief description of the model's capabilities.
         """
 
-        self.__selected_model: Optional[StringMap] = self.__LISTED_MODELS.get(
-            model, None
-        )
+        self.selected_model: Optional[StringMap] = self.__LISTED_MODELS.get(model, None)
         """
         The specified `model` set by the user. 
         This retrieves the data directly from `__GEMINI_MODELS`.
         """
-        if self.__selected_model == None:
+        if self.selected_model == None:
             raise FriendlyNameIsInvalid(f"Friendly name: '{model}' is invalid.")
-
-        self.model_name: str = self.__selected_model["MODELNAME"]
-        self.description: str = self.__selected_model["DESCRIPTION"]
+        self.model_name: str = self.selected_model["MODELNAME"]
+        self.description: str = self.selected_model["DESCRIPTION"]
 
         # If `secrets` was initialized and models is not `None`, start the API.
-        genai.configure(api_key=secrets.get())
+        genai.configure(api_key=secrets.get(decrypt=True)["GEMINI"])
         self.__gemini = genai.GenerativeModel(
-            model_name=self.__selected_model["MODELNAME"],
+            model_name=self.selected_model["MODELNAME"],
         )
-        self.__gemini_history = []
+        self.__gemini_history: MemoryList = []
 
         logger.debug(
             f"Gemini model selected: {self.model_name}. API should be working now."
         )
 
-    def get_response(self, request: MediaList) -> tuple[GenericKeyMap, EnvStates]:
+    def get_response(self, request: MediaList) -> Message:
         """
         this function does not handle the image, handling the image must be managed outside this scope.
         format:
@@ -83,19 +79,19 @@ class GeminiModel:
         friendly.i_was_called(self.get_response)
 
         data: NullableContentResponse = None
-        state: EnvStates
 
         # Handle the request format:
-        if self.__is_single_str(request):
-            logger.info("The `request` object only contains a string.")
+        if self.__req_is_str(request):
+            logger.info("Request only has a string.")
             # The first (0) index of `request` is always a string.
-            data, state = self.__handle_response(request[0])
+            self.__add_history("user", request[0])
+            data = self.__handle_response()
 
-        elif self.__is_str_and_image(request):
-            raise NotImplementedError()
+        elif self.__req_is_str_n_image(request):
             logger.info("The `request` object contains an image to analyze.")
             # The second (1) index of `request` is always an `ImageFile` object.
-            data, state = self.__handle_response(request)
+            self.__add_history("user", request)
+            data = self.__handle_response()
 
         else:
             raise InvalidAIRequestFormat("The format of `request` is invalid.")
@@ -105,50 +101,51 @@ class GeminiModel:
         if data is None:
             raise AIRequestFailure(
                 "Failed to retrieve data from the Gemini API. "
-                f"The requested object '{friendly.full_name(data)}' is `None`.\n"
+                f"The requested object '{friendly.var_info(data)}' is `None`.\n"
                 "Check the logger for more information."
             )
 
-        return json.loads(json.dumps(data.to_dict())), state
+        return data.to_dict()
 
-    def __is_single_str(self, req: MediaList, index: int = 1) -> bool:
+    def __add_history(self, role: str, content: object) -> GenericKeyMap:
+        """Adds a message to the chat history."""
+        friendly.i_was_called(self.__add_history)
+        history_entry: GenericKeyMap = {"role": role, "parts": content}
+        self.__gemini_history.append(history_entry)
+        return history_entry
+
+    def __req_is_str(self, request: MediaList, index: int = 1) -> bool:
         """
         Checks if the request contains only a single string.
         The `index` argument is a helper for the `__is_str_and_image` method.
         """
-        friendly.i_was_called(self.__is_single_str)
-
+        friendly.i_was_called(self.__req_is_str)
+        if not request[0]:
+            raise RuntimeError(
+                "An empty string was received but expected a non-empty value."
+            )
         if index <= 0 or index >= 3:
             raise IndexError(
-                f"The `index` argument at {friendly.func_info(self.__is_single_str)} is invalid."
+                f"The `index` argument at {friendly.func_info(self.__req_is_str)} is invalid."
             )
-        return len(req) == index and isinstance(req[0], str)
+        return len(request) == index and isinstance(request[0], str)
 
-    def __is_str_and_image(self, req: MediaList) -> bool:
+    def __req_is_str_n_image(self, request: MediaList) -> bool:
         """Checks if the request contains a string followed by an ImageFile."""
         # Handle edge case where the first element of `request` is an empty string.
-        friendly.i_was_called(self.__is_str_and_image)
+        if not request[0]:
+            request[0] = "Can you please analyze this image for me?"
+        return self.__req_is_str(request, 2) and isinstance(request[1], ImageFile)
 
-        if req[0] == "":
-            req[0] = "Can you please analyze this image for me?"
-        return self.__is_single_str(req, 2) and isinstance(req[1], ImageFile)
-
-    def __handle_response(
-        self,
-        res: MediaElement,
-    ) -> tuple[NullableContentResponse, EnvStates]:
-        """Handle the responses of the API. If any error occurs set `data` to `None`."""
+    def __handle_response(self) -> NullableContentResponse:
         friendly.i_was_called(self.__handle_response)
-
-        # Returned data from the AI
-        data: NullableContentResponse = None
+        logger.debug(self.__gemini_history)
 
         try:
-            # If ANY error occurs this will raise an exception.
-            data = self.__gemini.generate_content(...)
+            response = self.__gemini.generate_content(self.__gemini_history)
+            self.__add_history("gemini", response.candidates[0].content)
         except Exception as e:
             logger.error(e)
-            data = None
-            return data, EnvStates.function_error
+            return None
 
-        return data, EnvStates.success
+        return response

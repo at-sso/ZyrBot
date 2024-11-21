@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 from getpass import getpass
@@ -89,40 +90,13 @@ def init() -> None:
             a = "Flag 'extraSecret' was set."
         logger.info(a + " Assuming the password or secret is correct...")
 
-    logger.info(f"Checking encryption type of '{ENCRYPTED_KEY_FILE}'.")
-    # Verify encryption type and validity of the encrypted file
-    secret_type: str = __get_encryption_type(ENCRYPTED_KEY_FILE)
-    if secret_type == EnvStates.environment_error.value:
-        logger.critical("Failed to retrieve encryption type.", exc=__DecryptionError)
-    else:
-        logger.debug(f"Secret info of '{ENCRYPTED_KEY_FILE}': [\n{secret_type}].")
-
     __init_was_called = True
     logger.debug(
         f"{friendly.full_name(get)}: {f_wrapper.init(get, decrypt=False).status}"
     )
 
 
-def __get_encryption_type(f: str) -> str:
-    """
-    Determines the encryption type of a file by calling GPG.
-    Returns the encryption details as a string, or None if unsuccessful.
-    """
-    try:
-        # Run the `gpg --list-packets` command and capture the output
-        result = subprocess.run(
-            ["gpg", "--list-packets", f],
-            capture_output=True,
-            text=True,  # Ensures the output is a string, not bytes
-            check=True,  # Raises an error if the command fails
-        )
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        logger.critical(e)
-        return EnvStates.environment_error.value
-
-
-def get(decrypt: bool) -> str:
+def get(decrypt: bool) -> GenericKeyMap:
     """
     Decrypts the encrypted API key using GPG with the provided password.
 
@@ -158,7 +132,8 @@ def get(decrypt: bool) -> str:
 
     logger.info("Decryption success.")
     if decrypt:
-        return decrypted_data.decode().strip()
+        return json.loads(decrypted_data.decode().strip())
+
     return EnvStates.success.value
 
 

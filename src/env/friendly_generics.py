@@ -171,7 +171,7 @@ class __FriendlyGenerics:
             _[name] = str(var)
         return json.dumps(_, indent=4, default=_custom_serializer)
 
-    def i_was_called(self, f: GenericCallable, log: bool = False) -> str:
+    def i_was_called(self, f: GenericCallable, log: bool = True) -> str:
         """
         Returns a string representation of a callable being called.
 
@@ -179,10 +179,10 @@ class __FriendlyGenerics:
         @param log: Allows this function to log at level 'INFO' the returned message.
         @return: A string with the full name and unique identifier of the callable being called.
         """
-        _: str = f"Callable '{self.full_name(f, f.__name__)}' was called."
+        msg: str = f"Callable '{self.full_name(f, f.__name__)}' was called."
         if log:
-            logger.info(_)
-        return _
+            logger.info(msg)
+        return msg
 
 
 friendly = __FriendlyGenerics()

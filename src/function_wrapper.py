@@ -1,10 +1,8 @@
 import traceback as tb
 from time import time as timer
 
-from .env.locales import EnvStates
+from .env import *
 
-from .env.ptypes import *
-from .env.logger import logger as _logger, friendly as _friendly
 
 
 class __FunctionWrapper:
@@ -55,9 +53,9 @@ class __FunctionWrapper:
         # Function duration placeholder
         duration: float = 0.0
         # Function information placeholder
-        func_name: str = _friendly.func_info(f)
+        func_name: str = friendly.func_info(f)
 
-        _logger.info(f"Start of: {func_name}.")
+        logger.info(f"Start of: {func_name}.")
         try:
             # Start the timer and execute the given callable.
             start = timer()
@@ -65,7 +63,7 @@ class __FunctionWrapper:
         except:
             # In case of exception, end the timer and log information.
             duration = finish()
-            _logger.critical(
+            logger.critical(
                 f"Unhandled exception raised in {func_name}; this operation took {duration}. Tb:\n{tb.format_exc()}"
             )
             # If `reraise` is `True`, re-raise the exception that occurred in `f` after logging the tb.
@@ -77,7 +75,7 @@ class __FunctionWrapper:
 
         # In case of success (no exceptions) finish the timer, and log information.
         duration = finish()
-        _logger.info(f"Operation {func_name}, took: {duration}.")
+        logger.info(f"Operation {func_name}, took: {duration}.")
 
         self.status = func_val
         return self
@@ -123,7 +121,7 @@ class __FunctionWrapper:
         a = self.handler(f, reraise=False, *args, **kwargs)
 
         # Store the helper dictionary as a JSON-formatted string in `func_results`
-        self.func_results = _friendly.jsonify_values(
+        self.func_results = friendly.jsonify_values(
             self.__func_results_helper, a.status, EnvStates.unknown_value.value, f
         )
 

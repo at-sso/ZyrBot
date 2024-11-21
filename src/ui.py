@@ -6,9 +6,6 @@ from flet import Text, Page, ControlEvent, Control
 from .env import *
 from .command_handler import CommandsHandler
 
-_i_was_called = lambda f: friendly.i_was_called(f, log=True)
-"""Logs relevant information about every function that is being called."""
-
 
 class MessageType(Enum):
     USERNAME = "user_name"
@@ -27,7 +24,7 @@ class Message:
 
 class Interface:
     def __init__(self, page: Page) -> None:
-        _i_was_called(self.__init__)
+        friendly.i_was_called(self.__init__)
         self.__page = page
 
         self.__get_user_name_field = ft.TextField(label="Enter your username.")
@@ -73,7 +70,7 @@ class Interface:
         self.start()
 
     def start(self) -> EnvStates:
-        _i_was_called(self.start)
+        friendly.i_was_called(self.start)
 
         logger.info("Initializing UI.")
 
@@ -117,14 +114,14 @@ class Interface:
 
     def __add_new_message_event(self, msg: Message) -> None:
         """Adds a new message to the chat."""
-        _i_was_called(self.__add_new_message_event)
+        friendly.i_was_called(self.__add_new_message_event)
         logger.info(f"{msg.msg_type} | {msg.message}")
         self.__message_manager[msg.msg_type](msg)
         self.__page.update()
 
     def __send_new_message_event(self, e: ControlEvent) -> None:
         """Send message event, this function also handles possible commands."""
-        _i_was_called(self.__send_new_message_event)
+        friendly.i_was_called(self.__send_new_message_event)
         message_text: str = self.__new_msg_field.value.strip()  # type: ignore[reportOptionalMemberAccess]
         # Make `val` a 'global' instance in this scope
         val: Optional[object] = object()
@@ -179,7 +176,7 @@ class Interface:
 
     def __join_chat_event(self, e: ControlEvent) -> None:
         """Join chat interaction, this handles the username generally."""
-        _i_was_called(self.__join_chat_event)
+        friendly.i_was_called(self.__join_chat_event)
         if not self.__get_user_name_field.value:
             self.__get_user_name_field.error_text = "Your username cannot be blank!"
             self.__get_user_name_field.update()

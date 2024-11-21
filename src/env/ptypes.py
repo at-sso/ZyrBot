@@ -59,3 +59,4 @@ FunctionSignature = tuple[GenericCallable, GenericList, GenericKeyMap]
 FunctionSignatureDetails = tuple[str, *FunctionSignature]
 NullableContentResponse = Optional[GenerateContentResponse]
 MediaElement = _Media | MediaList
+MemoryList = list[GenericKeyMap | object]
