@@ -23,6 +23,7 @@ from typing_extensions import (
 # Type constructors:
 _P = ParamSpec("_P")
 _R = TypeVar("_R", bound=Any)
+_Media = str | ImageFile
 
 
 class CallableConstructor(Generic[_P, _R]):
@@ -40,7 +41,7 @@ StringCallback = Callable[[Optional[str]], None]
 # Lists
 GenericList = list[Any]
 StringList = list[str]
-MediaList = list[str | ImageFile]
+MediaList = list[_Media]
 
 # Maps
 GenericMap = dict[Any, Any]
@@ -57,4 +58,4 @@ ExceptionType = Optional[type[Exception]]
 FunctionSignature = tuple[GenericCallable, GenericList, GenericKeyMap]
 FunctionSignatureDetails = tuple[str, *FunctionSignature]
 NullableContentResponse = Optional[GenerateContentResponse]
-MediaElement = str | ImageFile | MediaList
+MediaElement = _Media | MediaList

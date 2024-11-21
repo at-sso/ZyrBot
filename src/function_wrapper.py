@@ -123,7 +123,7 @@ class __FunctionWrapper:
         a = self.handler(f, reraise=False, *args, **kwargs)
 
         # Store the helper dictionary as a JSON-formatted string in `func_results`
-        self.func_results = _friendly.list_of_values(
+        self.func_results = _friendly.jsonify_values(
             self.__func_results_helper, a.status, EnvStates.unknown_value.value, f
         )
 

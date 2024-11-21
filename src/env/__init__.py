@@ -5,8 +5,9 @@ from pathlib import Path as _Path
 from types import ModuleType as _ModuleType
 
 from .ptypes import *
+from .friendly_generics import friendly
 from .globales import *
-from .logger import *
+from .logger import logger
 from .locales import flags, EnvInfo, EnvStates
 
 

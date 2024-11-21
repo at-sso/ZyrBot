@@ -21,11 +21,12 @@ _logger_name: str = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.log"
 
 class EnvStates(Enum):
     success = "SUCCESS"
-    exit_on_command = "CMDEXIT"
-    environment_error = "ENVERROR"
-    unknown_value = "BADVALUE"
-    unknown_type = "BADTYPE"
-    unknown_location = "BADLOCATION"
+    exit_on_command = "CMD_EXIT"
+    environment_error = "ENV_ERROR"
+    function_error = "FUNC_ERROR"
+    unknown_value = "BAD_VALUE"
+    unknown_type = "BAD_TYPE"
+    unknown_location = "BAD_LOCATION"
 
 
 class __ArgsHandler:

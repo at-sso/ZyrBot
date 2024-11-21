@@ -4,6 +4,7 @@ from icecream import ic
 
 from .exc import *
 from ..env import *
+import PIL.Image
 
 
 def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:
@@ -61,36 +62,40 @@ class GeminiModel:
 
         # If `secrets` was initialized and models is not `None`, start the API.
         genai.configure(api_key=secrets.get())
-        self.gemini = genai.GenerativeModel(
+        self.__gemini = genai.GenerativeModel(
             model_name=self.__selected_model["MODELNAME"],
         )
+        self.__gemini_history = []
+
         logger.debug(
             f"Gemini model selected: {self.model_name}. API should be working now."
         )
 
-    def get_response(self, request: MediaList) -> GenericKeyMap:
+    def get_response(self, request: MediaList) -> tuple[GenericKeyMap, EnvStates]:
         """
         this function does not handle the image, handling the image must be managed outside this scope.
         format:
             only string request: `["..."]`
             analyze image request: `["...", ImageFile]`
             any: raise `InvalidAIRequestFormat`
-        if somehow request is impossible to analyze, and `data` is `None`, raise `AIRequestFailure`
+        if somehow request has an error `data` will be `None`, and this will raise `AIRequestFailure`
         """
-        logger.debug(f"Function {friendly.func_info(self.get_response)} was called.")
+        friendly.i_was_called(self.get_response)
 
         data: NullableContentResponse = None
+        state: EnvStates
 
         # Handle the request format:
         if self.__is_single_str(request):
             logger.info("The `request` object only contains a string.")
             # The first (0) index of `request` is always a string.
-            data = self.__handle_response(request[0])
+            data, state = self.__handle_response(request[0])
 
         elif self.__is_str_and_image(request):
+            raise NotImplementedError()
             logger.info("The `request` object contains an image to analyze.")
             # The second (1) index of `request` is always an `ImageFile` object.
-            data = self.__handle_response(request)
+            data, state = self.__handle_response(request)
 
         else:
             raise InvalidAIRequestFormat("The format of `request` is invalid.")
@@ -104,30 +109,46 @@ class GeminiModel:
                 "Check the logger for more information."
             )
 
-        return json.loads(json.dumps(data.to_dict()))
+        return json.loads(json.dumps(data.to_dict())), state
 
     def __is_single_str(self, req: MediaList, index: int = 1) -> bool:
         """
         Checks if the request contains only a single string.
         The `index` argument is a helper for the `__is_str_and_image` method.
         """
+        friendly.i_was_called(self.__is_single_str)
+
         if index <= 0 or index >= 3:
-            raise IndexError()
+            raise IndexError(
+                f"The `index` argument at {friendly.func_info(self.__is_single_str)} is invalid."
+            )
         return len(req) == index and isinstance(req[0], str)
 
     def __is_str_and_image(self, req: MediaList) -> bool:
         """Checks if the request contains a string followed by an ImageFile."""
-                # Handle edge case where the first element of `request` is an empty string.
+        # Handle edge case where the first element of `request` is an empty string.
+        friendly.i_was_called(self.__is_str_and_image)
+
         if req[0] == "":
             req[0] = "Can you please analyze this image for me?"
         return self.__is_single_str(req, 2) and isinstance(req[1], ImageFile)
 
-    def __handle_response(self, res: MediaElement) -> NullableContentResponse:
-        a: NullableContentResponse = None
+    def __handle_response(
+        self,
+        res: MediaElement,
+    ) -> tuple[NullableContentResponse, EnvStates]:
+        """Handle the responses of the API. If any error occurs set `data` to `None`."""
+        friendly.i_was_called(self.__handle_response)
+
+        # Returned data from the AI
+        data: NullableContentResponse = None
+
         try:
             # If ANY error occurs this will raise an exception.
-            a = self.gemini.generate_content(res)
+            data = self.__gemini.generate_content(...)
         except Exception as e:
             logger.error(e)
-            return None
-        return a
+            data = None
+            return data, EnvStates.function_error
+
+        return data, EnvStates.success
