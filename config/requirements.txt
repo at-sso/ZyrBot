@@ -12,6 +12,7 @@ charset-normalizer==3.4.0
 click==8.1.7
 colorama==0.4.6
 cookiecutter==2.6.0
+cssselect==1.2.0
 exceptiongroup==1.2.2
 executing==2.1.0
 fastapi==0.115.4
@@ -35,6 +36,8 @@ httpx==0.27.2
 icecream==2.1.3
 idna==3.10
 Jinja2==3.1.4
+lxml==5.3.0
+lxml_html_clean==0.4.1
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 mdurl==0.1.2
@@ -56,6 +59,7 @@ python-dotenv==1.0.1
 python-slugify==8.0.4
 PyYAML==6.0.2
 qrcode==7.4.2
+readability-lxml==0.8.1
 repath==0.9.0
 requests==2.32.3
 rich==13.9.4
