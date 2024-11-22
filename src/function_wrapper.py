@@ -4,7 +4,6 @@ from time import time as timer
 from .env import *
 
 
-
 class __FunctionWrapper:
     def __init__(self) -> None:
         self.status: object = None

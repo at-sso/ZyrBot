@@ -10,9 +10,10 @@ def main() -> str:
     try:
         # Start the key manager handling.
         f_wrapper.init(secrets.init)
+        f_wrapper.init(secrets.get)
         # Start Flet engine and UI.
         f_wrapper.init(
-            f=ft.app,
+            f=ft.app,  # type: ignore[reportUnknownArgumentType]
             target=Interface,
             name=EnvInfo.program_name.value,
             assets_dir="assets",

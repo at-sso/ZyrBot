@@ -50,7 +50,8 @@ def init() -> None:
     """
     if flags.deadInternet:
         logger.warning(
-            f"Flag 'deadInternet' detected. API key retrieval is impossible. Function '{friendly.full_name(get)}' will terminate the program."
+            "Flag 'deadInternet' detected. API key retrieval is impossible. "
+            f"Function '{friendly.full_name(get)}' will terminate the program."
         )
         return
 
@@ -96,7 +97,7 @@ def init() -> None:
     )
 
 
-def get(decrypt: bool) -> GenericKeyMap:
+def get(decrypt: bool = False) -> GenericKeyMap | str:
     """
     Decrypts the encrypted API key using GPG with the provided password.
 
@@ -104,9 +105,15 @@ def get(decrypt: bool) -> GenericKeyMap:
     - Do not store or print the decrypted API key in plain text. This could pose a significant security risk.
     - Use the decrypted key immediately and securely. Avoid storing it in variables or logging it.
 
-    @parm decrypt (bool): Whether to decrypt the API key.
+    Extremely important (Dev notes):
+    - If `decrypt` is True, the returned value WILL BE A DICTIONARY! Keep this in mind while handling the result.
+    - The keys hold the API key of its given name, for example: "GEMINI", returns the API key of Google AI Gemini.
+    - The following keys are expected to be returned:
 
-    @return The decrypted API key if `decrypt` is True, otherwise a success indicator.
+    >>> ["GEMINI", "GCLOUD"]
+
+    @parm decrypt (bool): Whether to decrypt the API key.
+    @return The decrypted API keys if `decrypt` is True, otherwise a success indicator.
     """
     if not __init_was_called:
         raise __KeyManagerNotInitialized(
@@ -133,7 +140,6 @@ def get(decrypt: bool) -> GenericKeyMap:
     logger.info("Decryption success.")
     if decrypt:
         return json.loads(decrypted_data.decode().strip())
-
     return EnvStates.success.value
 
 

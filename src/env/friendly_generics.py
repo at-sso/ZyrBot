@@ -37,14 +37,23 @@ class __FriendlyGenerics:
         return f"id: {id(v)}"
 
     @staticmethod
-    def full_name(x: object, err: str = EnvStates.unknown_location.value) -> str:
+    def full_name(x: object) -> str:
         """
         Gets the fully qualified name of a callable or variable.
 
         @param x: The callable or variable.
-        @param err (optional): Error name.
         @return: The fully qualified name or `err` if the qualified name is unknown.
         """
+        result = str()
+        if hasattr(x, "__module__"):
+            result += f"{x.__module__}"
+        elif hasattr(x, "__qualname__"):
+            result += f"{x.__qualname__}"
+        else:
+            result = str(x)
+        return result
+
+        # Old implementation (a little faster, but worse in generic scenarios):
         try:
             return f"{x.__module__}.{x.__qualname__}"
         except AttributeError:
@@ -66,7 +75,7 @@ class __FriendlyGenerics:
         @param f: The callable to analyze.
         @return: A string with the full name and unique identifier of the callable.
         """
-        return f"{self.full_name(f, f.__name__)}, {self.unique_id(f)}"
+        return f"{self.full_name(f)}, {self.unique_id(f)}"
 
     @staticmethod
     def map_keys(d: GenericMap) -> str:
@@ -93,11 +102,11 @@ class __FriendlyGenerics:
         """
         Retrieves the value associated with a key in a dictionary and formats it as a string.
 
-        Returns "BADVALUE" if the key is not found.
+        Returns "`EnvStates.unknown_value`" if the key is not found.
 
         @param d: The dictionary to search.
         @param key: The key to look for.
-        @return: A formatted string of the key-value pair or "BADVALUE".
+        @return: A formatted string of the key-value pair or "`EnvStates.unknown_value`".
         """
         err = EnvStates.unknown_value.value
         item = d.get(key, err)
@@ -110,11 +119,11 @@ class __FriendlyGenerics:
         Searches for a given item in a dictionary and retrieves its key.
 
         This method can be slow because it involves reversing the dictionary search.
-        Returns "BADVALUE" if the item is not found.
+        Returns "`EnvStates.unknown_value`" if the item is not found.
 
         @param d: The dictionary to search.
         @param item: The item to search for.
-        @return: The key associated with the item or "BADVALUE".
+        @return: The key associated with the item or "`EnvStates.unknown_value`".
         """
         # Create a reversed dictionary to map items back to keys
         reversed_dict = {value: key for key, value in d.items()}
@@ -137,19 +146,24 @@ class __FriendlyGenerics:
 
         This function iterates over an iterable of variables or callables (`args`) and assigns each
         a corresponding status in the `content` dictionary based on its value:
-            - If the variable is `None`, it is assigned `EnvStates.success`.
-            - If the variable matches the provided `err` value, it is assigned `EnvStates.unknown_value`.
-            - Otherwise, the variable's own value is stored as its status.
+
+        - If the variable is `None`, it is assigned `EnvStates.success`.
+        - If the variable matches the provided `err` value, it is assigned `EnvStates.unknown_value`.
+        - Otherwise, the variable's own value is stored as its status.
+
+        The `given_var` argument is used to determine the status of each variable in `args`.
+        If `given_var` is `None`, it indicates a successful operation. If it matches the `err` value,
+        it indicates an error. Otherwise, it's used as the status value.
 
         @param content (GenericKeyMap): A dictionary to store the statuses of variables or callables.
-        @param err (object): A value representing an error state. If a variable in `args` matches this value, it is assigned `EnvStates.unknown_value`.
+        @param given_var (object): The value used to determine the status of each variable.
+        @param err (object): A value representing an error state.
         @param *args (object): An iterable of variables or callable functions whose statuses will be stored in `content`.
 
-        Returns:
-            str: A JSON-formatted string representing the `content` dictionary, with the statuses of each variable.
+        @return: A JSON-formatted string representing the `content` dictionary, with the statuses of each variable.
         """
-        for var in args:
-            name: str = self.var_info(var)
+        for arg_val in args:
+            name: str = self.var_info(arg_val)
             if given_var is None:
                 # If the function returned None, assign EnvStates.success as default
                 content[name] = EnvStates.success.value
@@ -164,12 +178,25 @@ class __FriendlyGenerics:
         return json.dumps(content, indent=4, default=_custom_serializer)
 
     def jsonify_generic_values(self, *args: object) -> str:
-        """Does the same as `jsonify_values`, but uses local variables instead."""
-        _: GenericKeyMap = {}
+        """
+        Serializes a list of values into a JSON string.
+
+        This function iterates over the provided arguments and creates a dictionary where:
+        - The key is a string representation of the variable's type and a unique identifier.
+        - The value is the string representation of the variable itself.
+
+        Note: This function is faster than `jsonify_values`.
+
+        @param *args (object): An iterable of values to be serialized.
+        @return: A JSON-formatted string representing the dictionary of values.
+        """
+        content: GenericKeyMap = {}
         for var in args:
             name: str = f"{self.var_type(var)}, {self.unique_id(var)}"
-            _[name] = str(var)
-        return json.dumps(_, indent=4, default=_custom_serializer)
+            content[name] = str(var)
+        # We're directly 'stringifying' generic objects, even `Enum` types, to handle them consistently.
+        # This eliminates the need for a custom `default` argument in JSON serialization.
+        return json.dumps(content, indent=4)
 
     def i_was_called(self, f: GenericCallable, log: bool = True) -> str:
         """
@@ -179,11 +206,11 @@ class __FriendlyGenerics:
         @param log: Allows this function to log at level 'INFO' the returned message.
         @return: A string with the full name and unique identifier of the callable being called.
         """
-        msg: str = f"Callable '{self.full_name(f, f.__name__)}' was called."
+        msg: str = f"Callable '{self.full_name(f)}' was called."
         if log:
             logger.info(msg)
         return msg
 
 
 friendly = __FriendlyGenerics()
-"""Provide user-friendly string representations for generic values."""
+"""Provide user-friendly or readable string representations for any generic value."""
