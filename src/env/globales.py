@@ -12,6 +12,7 @@ NOTE: Running this path from another directory (other than main.py) may cause un
 SOURCE_FOLDER: str = f"{CURRENT_PATH}/src"
 "Source code path."
 SECRETS_FOLDER: str = f"{CURRENT_PATH}/.secrets"
+CACHE_FOLDER: str = f"{CURRENT_PATH}/.cache"
 ######################################################################################################
 
 

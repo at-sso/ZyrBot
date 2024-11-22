@@ -1,4 +1,4 @@
-from ..env import *
+from src.env import *
 
 
 class FriendlyNameIsInvalid(BaseException):
@@ -17,5 +17,15 @@ class AIRequestFailure(BaseException):
 
 
 class InvalidAIRequestFormat(BaseException):
+    def __init__(self, s: object) -> None:
+        super().__init__(s, self.__class__)
+
+
+class FetchUnsuccessfulOrImpossible(BaseException):
+    def __init__(self, s: object) -> None:
+        super().__init__(s, self.__class__)
+
+
+class DocumentModeIsInvalid(BaseException):
     def __init__(self, s: object) -> None:
         super().__init__(s, self.__class__)

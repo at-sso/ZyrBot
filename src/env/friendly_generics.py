@@ -139,6 +139,7 @@ class __FriendlyGenerics:
         content: GenericKeyMap,
         given_var: object,
         err: object,
+        large_data: bool = False,
         *args: object,
     ) -> str:
         """
@@ -171,7 +172,8 @@ class __FriendlyGenerics:
                 # Explicitly set to unknown value if an error occurs
                 content[name] = EnvStates.unknown_value.value
             else:
-                # For all other cases, store the status as is
+                if large_data:
+                    given_var = f"{EnvStates.success.value} WITH EXTREMELY LARGE DATA"
                 content[name] = given_var
 
         # Get the formatted results in JSON.

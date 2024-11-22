@@ -10,6 +10,7 @@ __pycache__
 .pytest_cache
 **/cache/**
 *.log
+*.cache
 
 # Private files:
 .secrets/**

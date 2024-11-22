@@ -12,6 +12,7 @@ class __FunctionWrapper:
         """Get the results of every single executed function at any point."""
         self.__func_results_helper: GenericKeyMap = {}
         """Helper map that stores the name and status of every function."""
+        self.__large_data: bool = False
 
     def handler(
         self,
@@ -121,9 +122,28 @@ class __FunctionWrapper:
 
         # Store the helper dictionary as a JSON-formatted string in `func_results`
         self.func_results = friendly.jsonify_values(
-            self.__func_results_helper, a.status, EnvStates.unknown_value.value, f
+            self.__func_results_helper,
+            a.status,
+            EnvStates.unknown_value.value,
+            self.__large_data,
+            f,
         )
 
+        return self
+
+    def init_extremely_large_data(
+        self,
+        init_calls: GenericCallable,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Calls `self.init` to initialize data.
+        If the data is expected to be large, a flag is set in the dictionary to optimize subsequent operations.
+        """
+        self.__large_data = True
+        self.init(init_calls, *args, **kwargs)
+        self.__large_data = False
         return self
 
 

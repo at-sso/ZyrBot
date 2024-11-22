@@ -2,8 +2,8 @@ import google.generativeai as genai
 from icecream import ic
 from proto import Message
 
-from .exc import *
-from ..env import *
+from .tools.exc import *
+from src.env import *
 
 
 def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:

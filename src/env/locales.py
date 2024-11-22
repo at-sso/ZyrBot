@@ -25,7 +25,6 @@ class EnvStates(Enum):
     environment_error = "ENV_ERROR"
     function_error = "FUNC_ERROR"
     unknown_value = "BAD_VALUE"
-    unknown_type = "BAD_TYPE"
     unknown_location = "BAD_LOCATION"
 
 
@@ -40,6 +39,7 @@ class __ArgsHandler:
         self.noWinget: bool = not self.__a.noWinget
         self.devToys: bool = self.__a.devToys
         self.lactoseIntolerant: bool = self.__a.lactoseIntolerant
+        self.connectTimeout: int = self.__a.connectTimeout
         # API Key Configuration Flags
         self.doNotSaveMyKey: bool = not self.__a.doNotSaveMyKey
         self.extraSecret: bytes = self.__a.extraSecret.encode("utf-32")
@@ -114,6 +114,7 @@ class __ArgsHandler:
         set_arg("-noWinget", action="store_true", default=False)
         set_arg("-devToys", action="store_true", default=False)
         set_arg("-lactoseIntolerant", action="store_true", default=False)
+        set_arg("-connectTimeout", type=int, default=10)
         # API Key Configuration Flags
         set_arg("-doNotSaveMyKey", action="store_true", default=False)
         set_arg("-extraSecret", type=str, default=EnvStates.unknown_value.value)

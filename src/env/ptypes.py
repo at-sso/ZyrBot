@@ -43,6 +43,7 @@ GenericList = list[Any]
 StringList = list[str]
 MediaList = list[_Media]
 
+
 # Maps
 GenericMap = dict[Any, Any]
 GenericKeyMap = dict[str, Any]
@@ -60,3 +61,9 @@ FunctionSignatureDetails = tuple[str, *FunctionSignature]
 NullableContentResponse = Optional[GenerateContentResponse]
 MediaElement = _Media | MediaList
 MemoryList = list[GenericKeyMap | object]
+MaybeRaises = Optional[NoReturn]
+FlexibleString = str | list[str]
+FlexibleStringMap = dict[str, FlexibleString]
+FlexibleStringData = Optional[FlexibleString]
+KeyValueTuple = tuple[object, str]
+KeyValues = list[KeyValueTuple]

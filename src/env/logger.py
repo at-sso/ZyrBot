@@ -63,7 +63,7 @@ class __LoggerHandler:
 
     def handler(
         self, logging_level: int, message: object, exc: ExceptionType = None
-    ) -> None:
+    ) -> MaybeRaises:
         """
         The function `__logger_message_handler` calls a specified function with a given argument.
 
@@ -105,7 +105,7 @@ class __Logger:
         """
         _hdlr.handler(logging.INFO, message)
 
-    def warning(self, message: object, exc: ExceptionType = None) -> None:
+    def warning(self, message: object, exc: ExceptionType = None) -> MaybeRaises:
         """
         The `warning` function logs a warning message using a logger message handler.
 
@@ -115,7 +115,7 @@ class __Logger:
         """
         _hdlr.handler(logging.WARNING, message, exc)
 
-    def error(self, message: object, exc: ExceptionType = None) -> None:
+    def error(self, message: object, exc: ExceptionType = None) -> MaybeRaises:
         """
         The function `error` logs an error message using a logger message handler.
 
@@ -125,7 +125,7 @@ class __Logger:
         """
         _hdlr.handler(logging.ERROR, message, exc)
 
-    def critical(self, message: object, exc: ExceptionType = None) -> None:
+    def critical(self, message: object, exc: ExceptionType = None) -> MaybeRaises:
         """
         This function logs a critical message using a logger message handler.
 
