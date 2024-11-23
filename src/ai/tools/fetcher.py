@@ -33,14 +33,18 @@ class PythonFetch:
         Initializes the PythonFetch instance with available Python versions and documentation modes.
         """
         self.__docs_url: LitStr = "https://docs.python.org/"
+        """Constant. This is the Python official documentation."""
         self.__doc_type: FlexibleStringMap = {
             "help": ["appetite.html", "interpreter.html", "introduction.html"],
             "controlflow": "controlflow.html",
             "datastructures": "datastructures.html",
             "modules": "modules.html",
         }
+        """Supported documents."""
         self.PY_VERSIONS: StringList = self.__get_py_vers()
-        self.DOCUMENT_LIST: list[FlexibleString] = list(self.__doc_type.keys())
+        """The list of every Python version available."""
+        self.DOCUMENT_LIST: StringList = list(self.__doc_type.keys())
+        """The list of supported documents."""
 
     def fetch_content(self, mode: str, py_ver: str) -> KeyValues:
         """
@@ -186,3 +190,6 @@ class PythonFetch:
             _no_internet(PYTHON_API)
 
         return sorted(versions)
+
+
+py_fetch = PythonFetch()

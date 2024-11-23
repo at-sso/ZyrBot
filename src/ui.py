@@ -3,6 +3,7 @@ from icecream import ic
 import flet as ft
 from flet import Text, Page, ControlEvent, Control
 
+from .ai.tools.fetcher import py_fetch
 from .env import *
 from .command_handler import CommandsHandler
 
@@ -29,8 +30,7 @@ class Interface:
 
         self.__get_user_name_field = ft.TextField(label="Enter your username.")
         """User name field"""
-        self.__new_msg_field = ft.TextField(
-            label="Message <AI_TYPE>",
+        self.__write_msg_field = ft.TextField(
             hint_text="Write a message.",
             autofocus=True,
             shift_enter=True,
@@ -42,6 +42,7 @@ class Interface:
         )
         """New message text field"""
 
+        self.__dropdown_rows = ft.Row()
         self.__chat = ft.ListView(expand=True, spacing=10, auto_scroll=True)
         """Chat list"""
         self.__chat_ctrl_ref: list[Control] = self.__chat.controls
@@ -67,6 +68,20 @@ class Interface:
         Simply pass a reference `Message` class to this, and it will format everything for you.
         """
 
+        self.__ai_types: StringList = ["Gemini"]
+        self.__py_vers: StringList = py_fetch.PY_VERSIONS
+        self.__doc_list: StringList = py_fetch.DOCUMENT_LIST
+
+        self.__dropdown_menu_holder: dict[str, Optional[str]] = {
+            "ai_types": None,
+            "py_vers": None,
+            "document_list": None,
+        }
+        """
+        Get or modify every value from the expected dropdown menus.
+        Use the name of the variable as a string key.
+        """
+
         self.start()
 
     def start(self) -> EnvStates:
@@ -90,6 +105,13 @@ class Interface:
             actions_alignment="end",  # type: ignore[reportArgumentType]
         )
 
+        dropdown_ai_types = ft.Dropdown(
+            options=[ft.dropdown.Option(option) for option in self.__ai_types],
+            on_change=lambda e: self.__store_selected_dropdown_value(
+                "Python version", e.control.value
+            ),
+        )
+
         self.__page.add(
             ft.Container(
                 content=self.__chat,
@@ -100,7 +122,7 @@ class Interface:
             ),
             ft.Row(
                 controls=[
-                    self.__new_msg_field,
+                    self.__write_msg_field,
                     ft.IconButton(
                         icon=ft.icons.SEND_ROUNDED,
                         tooltip="Send message",
@@ -122,18 +144,18 @@ class Interface:
     def __send_new_message_event(self, e: ControlEvent) -> None:
         """Send message event, this function also handles possible commands."""
         friendly.i_was_called(self.__send_new_message_event)
-        message_text: str = self.__new_msg_field.value.strip()  # type: ignore[reportOptionalMemberAccess]
+        message_text: str = self.__write_msg_field.value.strip()  # type: ignore[reportOptionalMemberAccess]
         # Make `val` a 'global' instance in this scope
         val: Optional[object] = object()
         is_command: bool = False
         # If there was any invalid event before this was called, clear the `error_text` event.
-        self.__new_msg_field.error_text = ""
+        self.__write_msg_field.error_text = ""
 
         ic(message_text)
 
         if message_text == "":
-            self.__new_msg_field.error_text = "Please write a message before sending."
-            self.__new_msg_field.update()
+            self.__write_msg_field.error_text = "Please write a message before sending."
+            self.__write_msg_field.update()
             return
 
         if self.__cmd_handler.is_a_command(message_text):
@@ -144,11 +166,11 @@ class Interface:
                 logger.debug(f"Command {message_text} exists.")
             except:
                 # The command doesn't exist, prompt a message so the user can see the valid commands.
-                self.__new_msg_field.error_text = (
+                self.__write_msg_field.error_text = (
                     f"The command '{message_text}' doesn't exists. "
                     "Please use '/help' to see a list of available commands."
                 )
-                self.__new_msg_field.update()
+                self.__write_msg_field.update()
                 # Log information, and set the `val` variable to `None` to avoid exceptions and overlap.
                 logger.warning(f"Command {message_text} does not exists.")
                 val = None
@@ -167,11 +189,11 @@ class Interface:
             self.__page.pubsub.send_all(
                 Message(
                     user=self.__page.session.get(MessageType.USERNAME.value),
-                    text=self.__new_msg_field.value,
+                    text=self.__write_msg_field.value,
                     type=MessageType.CHAT,
                 )
             )
-        self.__new_msg_field.value = ""
+        self.__write_msg_field.value = ""
         self.__page.update()
 
     def __join_chat_event(self, e: ControlEvent) -> None:
@@ -193,3 +215,16 @@ class Interface:
                 )
             )
             self.__page.update()
+
+    def __build_ai_name(self) -> None:
+        name: Optional[str] = self.__dropdown_menu_holder.get("ai_types", None)
+        final: str = (
+            f"Message {EnvInfo.ai_name.value} {name if name is not None else ''}"
+        )
+        self.__write_msg_field.label = final
+        self.__write_msg_field.update()
+
+    def __store_selected_dropdown_value(self, dropdown_name: str, val: str) -> None:
+        friendly.i_was_called(self.__store_selected_dropdown_value)
+        logger.debug(f"{dropdown_name}: {val}")
+        self.__dropdown_menu_holder[dropdown_name] = val
