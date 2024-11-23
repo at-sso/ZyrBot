@@ -47,10 +47,10 @@ class __FriendlyGenerics:
         result = str()
         if hasattr(x, "__module__"):
             result += f"{x.__module__}"
-        elif hasattr(x, "__qualname__"):
+        if hasattr(x, "__qualname__"):
             result += f"{x.__qualname__}"
-        else:
-            result = str(x)
+        if isinstance(x, Enum):
+            result += f".{x.name}"
         return result
 
         # Old implementation (a little faster, but worse in generic scenarios):

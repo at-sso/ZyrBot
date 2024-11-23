@@ -1,17 +1,27 @@
 from enum import Enum
 from icecream import ic
 import flet as ft
-from flet import Text, Page, ControlEvent, Control
+from flet import Text, Page, ControlEvent, Control, Dropdown
 
 from .ai.tools.fetcher import py_fetch
+from .ai import *
 from .env import *
 from .command_handler import CommandsHandler
+
+
+class DropdownMenuTypes(Enum):
+    AI_TYPE = 1
+    PY_VERS = 2
+    DOCS = 3
+
+
+dd_menu_t = DropdownMenuTypes
 
 
 class MessageType(Enum):
     USERNAME = "user_name"
     CHAT = "chat_message"
-    LOGIN = "login_message"
+    ALERT = "alert_message"
 
 
 class Message:
@@ -60,7 +70,7 @@ class Interface:
 
         self.__message_manager: dict[MessageType, Callable[[Message], None]] = {
             MessageType.CHAT: lambda M: self.__new_text(f"{M.username}: {M.message}"),
-            MessageType.LOGIN: lambda M: self.__new_alert_text(M.message),
+            MessageType.ALERT: lambda M: self.__new_alert_text(M.message),
         }
         """
         Get the direct type of any message by using the message enum type itself. This directly affects
@@ -68,14 +78,20 @@ class Interface:
         Simply pass a reference `Message` class to this, and it will format everything for you.
         """
 
+        logger.info("Building dropdown menu lists")
         self.__ai_types: StringList = ["Gemini"]
-        self.__py_vers: StringList = py_fetch.PY_VERSIONS
-        self.__doc_list: StringList = py_fetch.DOCUMENT_LIST
+        """Simply allows the user to specify their AI. This can be easily expanded."""
+        self.__py_vers: StringList = [f"Python {v}" for v in py_fetch.PY_VERSIONS]
+        """The specific Python version, this is used for URL building."""
+        self.__doc_list: StringList = [
+            f"'{d.capitalize()}' Documents" for d in py_fetch.DOCUMENT_LIST
+        ]
+        """Allows the AI to have very precise data."""
 
-        self.__dropdown_menu_holder: dict[str, Optional[str]] = {
-            "ai_types": None,
-            "py_vers": None,
-            "document_list": None,
+        self.__dropdown_menu_holders: dict[DropdownMenuTypes, Optional[str]] = {
+            dd_menu_t.AI_TYPE: None,
+            dd_menu_t.PY_VERS: None,
+            dd_menu_t.DOCS: None,
         }
         """
         Get or modify every value from the expected dropdown menus.
@@ -89,7 +105,7 @@ class Interface:
 
         logger.info("Initializing UI.")
 
-        # Set flet's alert chat to the local instance of the alert chat
+        # Set Flet's alert chat to the local instance of the alert chat
         self.__cmd_handler.alert_chat = self.__new_alert_text
 
         self.__page.pubsub.subscribe(self.__add_new_message_event)
@@ -105,12 +121,18 @@ class Interface:
             actions_alignment="end",  # type: ignore[reportArgumentType]
         )
 
-        dropdown_ai_types = ft.Dropdown(
-            options=[ft.dropdown.Option(option) for option in self.__ai_types],
-            on_change=lambda e: self.__store_selected_dropdown_value(
-                "Python version", e.control.value
-            ),
+        ai_types: Dropdown = self.__add_new_dropdown_menu(
+            self.__ai_types, dd_menu_t.AI_TYPE, "AI type"
         )
+        py_vers: Dropdown = self.__add_new_dropdown_menu(
+            self.__py_vers, dd_menu_t.PY_VERS, "Python version"
+        )
+        doc_list: Dropdown = self.__add_new_dropdown_menu(
+            self.__doc_list, dd_menu_t.DOCS, "Document type"
+        )
+
+        self.__dropdown_rows.controls.extend([ai_types, py_vers, doc_list])
+        self.__page.add(self.__dropdown_rows)
 
         self.__page.add(
             ft.Container(
@@ -119,6 +141,11 @@ class Interface:
                 border_radius=5,
                 padding=10,
                 expand=True,
+            ),
+            ft.ElevatedButton(
+                text="Fetch",
+                on_click=self.__check_if_fetching_is_possible,
+                tooltip="Start fetching data.",
             ),
             ft.Row(
                 controls=[
@@ -211,20 +238,110 @@ class Interface:
                 Message(
                     user=self.__get_user_name_field.value,
                     text=f"{self.__get_user_name_field.value} has joined the chat.",
-                    type=MessageType.LOGIN,
+                    type=MessageType.ALERT,
                 )
             )
             self.__page.update()
 
-    def __build_ai_name(self) -> None:
-        name: Optional[str] = self.__dropdown_menu_holder.get("ai_types", None)
-        final: str = (
-            f"Message {EnvInfo.ai_name.value} {name if name is not None else ''}"
-        )
-        self.__write_msg_field.label = final
-        self.__write_msg_field.update()
+    def __add_new_dropdown_menu(
+        self, options: StringList, key_name: DropdownMenuTypes, preview: LitStr
+    ) -> Dropdown:
+        """
+        options is the list of values, while key_name is expected to be a key from `__dropdown_menu_holder`
+        """
 
-    def __store_selected_dropdown_value(self, dropdown_name: str, val: str) -> None:
-        friendly.i_was_called(self.__store_selected_dropdown_value)
-        logger.debug(f"{dropdown_name}: {val}")
-        self.__dropdown_menu_holder[dropdown_name] = val
+        def _(e: ControlEvent) -> None:
+            return self.__setup_selected_dropdown_value(key_name, e.control.value)  # type: ignore[reportUnknownArgumentType]
+
+        return ft.Dropdown(
+            value=preview,
+            options=[ft.dropdown.Option(option) for option in options],
+            on_change=_,
+        )
+
+    def __setup_selected_dropdown_value(
+        self, key_name: DropdownMenuTypes, value: str
+    ) -> None:
+        friendly.i_was_called(self.__setup_selected_dropdown_value)
+        logger.debug(f"{key_name}: {value}")
+
+        # There is no need to check if the key exists since we are enforcing types.
+        self.__dropdown_menu_holders[key_name] = value
+
+        # Interact with the selected AI.
+        if key_name == dd_menu_t.AI_TYPE:
+            name = self.__dropdown_menu_holders.get(dd_menu_t.AI_TYPE)
+            final: str = (
+                f"Message {EnvInfo.ai_name.value}{f' - {name}' if name is not None else ''}"
+            )
+            self.__write_msg_field.label = final
+            self.__write_msg_field.update()
+
+        logger.debug(friendly.iter_info(self.__dropdown_menu_holders))
+
+    def __get_logical_value(self, s: str, l: StringList) -> str:
+        """Returns the actual logical value of the dropdown menus"""
+
+        def longest_common_substring(s1: str, s2: str) -> str:
+            # Use a sliding window approach for efficiency
+            max_len: int = 0
+            result: str = ""
+            len1, len2 = len(s1), len(s2)
+            s1, s2 = s1.lower(), s2.lower()
+            dp: list[list[int]] = [[0] * (len2 + 1) for _ in range(len1 + 1)]
+
+            for i in range(1, len1 + 1):
+                for j in range(1, len2 + 1):
+                    if s1[i - 1] == s2[j - 1]:
+                        dp[i][j] = dp[i - 1][j - 1] + 1
+                        if dp[i][j] > max_len:
+                            max_len = dp[i][j]
+                            result = s1[i - max_len : i]
+
+            return result
+
+        max_common: str = ""
+        for s2 in l:
+            common: str = longest_common_substring(s, s2)
+            if len(common) > len(max_common):
+                max_common = common
+
+        return max_common
+
+    def __check_if_fetching_is_possible(self, e: ControlEvent) -> None:
+        any_is_none: bool = False
+
+        # If any value is True, do not fetch data.
+        for k in self.__dropdown_menu_holders.keys():
+            logger.debug(k)
+            if self.__dropdown_menu_holders[k] is None:
+                any_is_none = True
+
+        if any_is_none:
+            self.__write_msg_field.error_text = "You must select every value in the dropdown menus to fetch information."
+            logger.warning(self.__write_msg_field.error_text)
+            self.__write_msg_field.update()
+        else:
+            self.__write_msg_field.error_text = ""
+
+            aim: str = self.__dropdown_menu_holders[dd_menu_t.AI_TYPE]  # type: ignore[reportAssignmentType]
+            ver: str = self.__get_logical_value(
+                self.__dropdown_menu_holders[dd_menu_t.PY_VERS],
+                py_fetch.PY_VERSIONS,
+            )
+            doc: str = self.__get_logical_value(
+                self.__dropdown_menu_holders[dd_menu_t.DOCS],
+                py_fetch.DOCUMENT_LIST,
+            )
+
+            ic(aim, ver, doc)
+            py_fetch.fetch_content(doc, ver)
+
+            self.__page.pubsub.send_all(
+                Message(
+                    user="",
+                    text=f"Selected {aim}, with Python {ver} & {doc.capitalize()}.",
+                    type=MessageType.ALERT,
+                )
+            )
+            self.__page.update()

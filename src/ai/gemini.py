@@ -149,3 +149,6 @@ class GeminiModel:
             return None
 
         return response
+
+
+GeminiType = Type[GeminiModel]

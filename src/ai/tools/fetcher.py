@@ -56,14 +56,16 @@ class PythonFetch:
         @return KeyValues: A list of tuples containing fetched content and filenames.
 
         Raises:
-            `ValueError`: If the specified Python version is invalid.
+            `ValueError`: If the specified Python version (`py_ver`) or `mode` is invalid.
             `DocumentModeIsInvalid`: If the specified mode is not available in `__doc_type`.
         """
         friendly.i_was_called(self.fetch_content)
 
+        if mode not in self.DOCUMENT_LIST:
+            raise ValueError(f"Invalid document mode: '{mode}'")
         # Check if `py_ver` is valid.
         if py_ver not in self.PY_VERSIONS:
-            raise ValueError(f"Invalid version: {py_ver}")
+            raise ValueError(f"Invalid version: '{py_ver}'")
 
         results: KeyValues = []
 
@@ -71,7 +73,7 @@ class PythonFetch:
         doc_type: FlexibleStringData = self.__doc_type.get(mode, None)
         if doc_type is None:
             raise DocumentModeIsInvalid(
-                f"Selected mode: {mode} is an invalid document type."
+                f"Selected mode: '{mode}' is an invalid document type."
             )
         logger.info(doc_type)
 
