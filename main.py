@@ -3,9 +3,6 @@ from src.function_wrapper import f_wrapper
 from src.env import *
 from src.env.ptypes import *
 
-from src.ai.gemini import *
-from src.ai.tools.fetcher import *
-
 
 def main() -> str:
     try:

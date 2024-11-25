@@ -1,7 +1,15 @@
-Fixed `full_name`, Added Documentation Fetching & UI
+AI Integration & UI Enhancements
 
 **Body:**
 
-- **`full_name` Fix:** Resolved issue where `full_name` wasn't displaying the full function/variable name (`src/env/friendly_generics.py`).
-- **Documentation Fetching:** Implemented `fetch_content` with mode validation (`src/ai/tools/fetcher.py`).
-- **UI Enhancements:** Added a "fetch" button and 3 dropdown menus for version selection in the UI (`src/ui.py`).
+- **Major Feature:** Implemented AI functionality with documentation fetching and rendering in the UI.
+- **UI Enhancements:** Added functionalities for fetching documentation based on user queries and displaying AI responses. (`src/ui.py`)
+- **Documentation Fetching:**
+  - Integrated BeautifulSoup in `fetcher.py` for HTML text extraction.
+  - Introduced `ModelNames` in `gemini.py` for API interaction.
+  - Implemented JSON handling in `gemini.py` and `ui.py` for storing and retrieving responses.
+  - Added a new exception `UnresolvedErrorWhileFetching` for error handling in `fetcher.py`.
+- **Code Improvements:**
+  - Removed unnecessary imports across various files (`main.py`, `gemini.py`).
+  - Fixed the `full_name` function in `friendly_generics.py` to accurately display names.
+  - Improved type definitions in `ptypes.py` by renaming and restructuring types related to HTML data.

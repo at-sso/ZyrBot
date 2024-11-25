@@ -1,6 +1,7 @@
+import json
+from pathlib import Path
 import google.generativeai as genai
 from icecream import ic
-from proto import Message
 
 from .tools.exc import *
 from src.env import *
@@ -9,6 +10,9 @@ from src.env import *
 def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:
     """Creates a dictionary mapping a model name to its description."""
     return {"MODELNAME": model, "DESCRIPTION": desc}
+
+
+ModelNames: StringList = ["1.5-flash", "1.5-flash-8b", "1.5-pro"]
 
 
 class GeminiModel:
@@ -25,15 +29,15 @@ class GeminiModel:
             )
 
         self.__LISTED_MODELS: NestedStringMap = {
-            "1.5-flash": _modelname_desc(
+            ModelNames[0]: _modelname_desc(
                 model="gemini-1.5-flash",
                 desc="A versatile model excelling in various tasks.",
             ),
-            "1.5-flash-8b": _modelname_desc(
+            ModelNames[1]: _modelname_desc(
                 model="gemini-1.5-flash-8b",
                 desc="Optimized for high-volume, less complex tasks.",
             ),
-            "1.5-pro": _modelname_desc(
+            ModelNames[2]: _modelname_desc(
                 model="gemini-1.5-pro",
                 desc="A powerful model for intricate reasoning and complex tasks.",
             ),
@@ -67,7 +71,7 @@ class GeminiModel:
             f"Gemini model selected: {self.model_name}. API should be working now."
         )
 
-    def get_response(self, request: MediaList) -> Message:
+    def get_response(self, request: MediaList) -> Path:
         """
         this function does not handle the image, handling the image must be managed outside this scope.
         format:
@@ -105,7 +109,14 @@ class GeminiModel:
                 "Check the logger for more information."
             )
 
-        return data.to_dict()
+        latest_res: Path = Path(globales.CACHE_FOLDER) / "latest_response.json"
+        json_res: str = json.dumps(data.to_dict(), indent=4)
+        latest_res.write_text(json_res)
+
+        return latest_res
+
+    def get_final_response(self, data: GenericKeyMap) -> str:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
 
     def __add_history(self, role: str, content: object) -> GenericKeyMap:
         """Adds a message to the chat history."""

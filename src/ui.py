@@ -1,10 +1,13 @@
 from enum import Enum
+import json
 from icecream import ic
 import flet as ft
 from flet import Text, Page, ControlEvent, Control, Dropdown
 
 from .ai.tools.fetcher import py_fetch
 from .ai import *
+from .ai.gemini import GeminiModel
+from .ai import gemini
 from .env import *
 from .command_handler import CommandsHandler
 
@@ -79,7 +82,9 @@ class Interface:
         """
 
         logger.info("Building dropdown menu lists")
-        self.__ai_types: StringList = ["Gemini"]
+        self.__ai_types_list: StringList = [
+            f"Gemini Model: {v}" for v in gemini.ModelNames
+        ]
         """Simply allows the user to specify their AI. This can be easily expanded."""
         self.__py_vers: StringList = [f"Python {v}" for v in py_fetch.PY_VERSIONS]
         """The specific Python version, this is used for URL building."""
@@ -97,6 +102,9 @@ class Interface:
         Get or modify every value from the expected dropdown menus.
         Use the name of the variable as a string key.
         """
+        self.__raw_html_data: Optional[RawHTMLData] = None
+        self.__gemini: Optional[GeminiModel] = None
+        self.__is_after_fetch: bool = False
 
         self.start()
 
@@ -122,7 +130,7 @@ class Interface:
         )
 
         ai_types: Dropdown = self.__add_new_dropdown_menu(
-            self.__ai_types, dd_menu_t.AI_TYPE, "AI type"
+            self.__ai_types_list, dd_menu_t.AI_TYPE, "AI type"
         )
         py_vers: Dropdown = self.__add_new_dropdown_menu(
             self.__py_vers, dd_menu_t.PY_VERS, "Python version"
@@ -160,6 +168,26 @@ class Interface:
         )
 
         return EnvStates.success
+
+    def __send_normal_message(self, usr: str, txt: str = EnvStates.unknown_value.value):
+        self.__page.pubsub.send_all(
+            Message(
+                user=usr,
+                text=txt,
+                type=MessageType.CHAT,
+            )
+        )
+
+    def __send_alert_message(
+        self, usr: str = "", txt: str = EnvStates.unknown_value.value
+    ):
+        self.__page.pubsub.send_all(
+            Message(
+                user=usr,
+                text=txt,
+                type=MessageType.ALERT,
+            )
+        )
 
     def __add_new_message_event(self, msg: Message) -> None:
         """Adds a new message to the chat."""
@@ -213,15 +241,36 @@ class Interface:
 
         if not is_command:
             # In case the message wasn't a command, simply prompt the new message into the chat.
-            self.__page.pubsub.send_all(
-                Message(
-                    user=self.__page.session.get(MessageType.USERNAME.value),
-                    text=self.__write_msg_field.value,
-                    type=MessageType.CHAT,
+            self.__send_normal_message(MessageType.USERNAME.value, message_text)
+            if self.__is_after_fetch:
+                self.__get_new_message_from_ai(message_text)
+            else:
+                raise gemini.AIRequestFailure(
+                    "Cannot send a message to the AI before fetching."
                 )
-            )
+
         self.__write_msg_field.value = ""
         self.__page.update()
+
+    def __get_new_message_from_ai(self, user_message: str) -> None:
+        friendly.i_was_called(self.__get_new_message_from_ai)
+
+        if self.__gemini is None and not self.__is_after_fetch:
+            raise gemini.AIRequestFailure("Failed to get message from AI.")
+
+        if isinstance(self.__raw_html_data, list):
+            raise NotImplementedError()
+        # The data is a tuple.
+        logger.info([user_message, EnvStates.success.value])
+        message: StringList = [
+            f"Following this documentation:{self.__raw_html_data}",
+            f"Answer this:{user_message}",
+        ]
+        ai_response = self.__gemini.get_response(["".join(message)])
+        json_response: GenericKeyMap = json.loads(ai_response.read_text())
+        final_response: str = self.__gemini.get_final_response(json_response)
+
+        self.__send_normal_message(EnvInfo.ai_name.value, final_response)
 
     def __join_chat_event(self, e: ControlEvent) -> None:
         """Join chat interaction, this handles the username generally."""
@@ -234,12 +283,9 @@ class Interface:
                 MessageType.USERNAME.value, self.__get_user_name_field.value
             )
             self.__page.dialog.open = False  # type: ignore[reportAttributeAccessIssue]
-            self.__page.pubsub.send_all(
-                Message(
-                    user=self.__get_user_name_field.value,
-                    text=f"{self.__get_user_name_field.value} has joined the chat.",
-                    type=MessageType.ALERT,
-                )
+            self.__send_alert_message(
+                self.__get_user_name_field.value,
+                f"{self.__get_user_name_field.value} has joined the chat.",
             )
             self.__page.update()
 
@@ -271,8 +317,13 @@ class Interface:
         # Interact with the selected AI.
         if key_name == dd_menu_t.AI_TYPE:
             name = self.__dropdown_menu_holders.get(dd_menu_t.AI_TYPE)
+            logger.debug(f"{dd_menu_t.AI_TYPE.name}: {name}")
+
             final: str = (
                 f"Message {EnvInfo.ai_name.value}{f' - {name}' if name is not None else ''}"
+            )
+            self.__gemini = GeminiModel(
+                self.__get_logical_value(name, gemini.ModelNames)
             )
             self.__write_msg_field.label = final
             self.__write_msg_field.update()
@@ -335,13 +386,10 @@ class Interface:
             )
 
             ic(aim, ver, doc)
-            py_fetch.fetch_content(doc, ver)
+            self.__raw_html_data = py_fetch.fetch_content(doc, ver)
+            self.__is_after_fetch = True
 
-            self.__page.pubsub.send_all(
-                Message(
-                    user="",
-                    text=f"Selected {aim}, with Python {ver} & {doc.capitalize()}.",
-                    type=MessageType.ALERT,
-                )
+            self.__send_alert_message(
+                txt=f"Selected {aim}, with Python {ver} & {doc.capitalize()}."
             )
             self.__page.update()

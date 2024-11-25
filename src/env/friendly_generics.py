@@ -44,14 +44,14 @@ class __FriendlyGenerics:
         @param x: The callable or variable.
         @return: The fully qualified name or `err` if the qualified name is unknown.
         """
-        result = str()
+        result: StringList = list()
         if hasattr(x, "__module__"):
-            result += f"{x.__module__}"
+            result.append(f"{x.__module__}")
         if hasattr(x, "__qualname__"):
-            result += f"{x.__qualname__}"
+            result.append(f"{x.__qualname__}")
         if isinstance(x, Enum):
-            result += f".{x.name}"
-        return result
+            result.append(f"{x.name}")
+        return ".".join(result)
 
         # Old implementation (a little faster, but worse in generic scenarios):
         try:

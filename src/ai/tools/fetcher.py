@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from pathlib import Path
 from icecream import ic
 import requests
@@ -46,14 +47,14 @@ class PythonFetch:
         self.DOCUMENT_LIST: StringList = list(self.__doc_type.keys())
         """The list of supported documents."""
 
-    def fetch_content(self, mode: str, py_ver: str) -> KeyValues:
+    def fetch_content(self, docs_type: str, py_ver: str) -> RawHTMLData:
         """
         Fetch the content of a specified Python documentation section for a specific version.
 
-        @param mode (str): The documentation type/mode to fetch (e.g., "help", "controlflow").
+        @param docs_type (str): The documentation type to fetch (e.g., "help", "controlflow").
         @param py_ver (str): The Python version (e.g., "3.9") for which the documentation is required.
 
-        @return KeyValues: A list of tuples containing fetched content and filenames.
+        @return KeyValues: A list of tuples containing fetched content and filenames or a single filename.
 
         Raises:
             `ValueError`: If the specified Python version (`py_ver`) or `mode` is invalid.
@@ -61,32 +62,29 @@ class PythonFetch:
         """
         friendly.i_was_called(self.fetch_content)
 
-        if mode not in self.DOCUMENT_LIST:
-            raise ValueError(f"Invalid document mode: '{mode}'")
+        # Prepare the 'documents'
+        doc_type: FlexibleStringData = self.__doc_type.get(docs_type, None)
+        if doc_type is None:
+            raise DocumentModeIsInvalid(
+                f"Selected mode: '{docs_type}' is an invalid document type."
+            )
+        logger.info(doc_type)
+
         # Check if `py_ver` is valid.
         if py_ver not in self.PY_VERSIONS:
             raise ValueError(f"Invalid version: '{py_ver}'")
 
-        results: KeyValues = []
-
-        # Prepare the 'documents'
-        doc_type: FlexibleStringData = self.__doc_type.get(mode, None)
-        if doc_type is None:
-            raise DocumentModeIsInvalid(
-                f"Selected mode: '{mode}' is an invalid document type."
-            )
-        logger.info(doc_type)
-
         # Build the URL
         url: str = f"{self.__docs_url}{py_ver}/tutorial"
+
+        results: RawHTMLFileList = []
         logger.debug(url)
         if isinstance(doc_type, list):
             for doc in doc_type:
                 results.append(self.__fetcher(f"{url}/{doc}"))
-        if isinstance(doc_type, str):
-            results.append(self.__fetcher(f"{url}/{doc_type}"))
-
-        return results
+            return results
+        # else, is instance of str.
+        return self.__fetcher(f"{url}/{doc_type}")
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
     def __get_response(self, session: Session, url: str) -> Response:
@@ -106,7 +104,7 @@ class PythonFetch:
             response.raise_for_status()
             return response
 
-    def __fetcher(self, url: str) -> KeyValueTuple:
+    def __fetcher(self, url: str) -> RawHTMLFile:
         """
         Fetch content from a given URL, process it using Readability, and save the content to a file.
 
@@ -119,35 +117,48 @@ class PythonFetch:
         friendly.i_was_called(self.__fetcher)
         logger.debug(url)
 
-        content: Any = object()
-        filename: str = str()
+        html_content: Any = object()
+        html_raw_text: str = ""
+        filename: str = ""
+        filepath: Path = Path()
 
         try:
             with requests.Session() as session:
                 response: Response = self.__get_response(session, url)
 
-            doc = Document(response.text)  # Process the content with Readability
-            title: str = doc.title()  # Page title
-            content: Any = doc.summary()  # Simplified "reader mode" HTML
+            # Process the content with Readability
+            doc: Document = Document(response.text)
+            # Page title
+            title: str = doc.title()
+            # Simplified "reader mode" HTML
+            html_content: Any = doc.summary()
 
             # Further clean the content using `lxml_html_clean`, we don't want trash!
             cleaner = Cleaner(page_structure=True, safe_attrs_only=True)
-            content = cleaner.clean_html(content)
+            html_content = cleaner.clean_html(html_content)
 
             # We save the data as a temporal file (not implemented here)
-            filename: str = title.replace(" ", "_") + ".html"
-            filepath: Path = Path(CACHE_FOLDER) / filename
+            filename = title.replace(" ", "") + ".html"
+            filepath = Path(CACHE_FOLDER) / filename
 
             # Create the file if it doesn't exists, then open it.
             filepath.parent.mkdir(parents=True, exist_ok=True)
             with open(filepath, "w", encoding="utf-8") as file:
-                file.write(content)
-
+                file.write(html_content)
             logger.debug(f"Content saved to '{filename}'.")
+
+            # Remove every HTML element
+            soup = BeautifulSoup(html_content, "html.parser")
+            html_raw_text = soup.get_text().strip().replace("\n\n", "\n")
+
         except RequestException:
             _no_internet(url)
+        except Exception:
+            logger.critical(
+                "An unresolved error occurred.", UnresolvedErrorWhileFetching
+            )
 
-        return content, filename
+        return html_raw_text, filepath
 
     def __get_py_vers(self) -> StringList | NoReturn:
         """

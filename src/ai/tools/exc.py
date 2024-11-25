@@ -29,3 +29,8 @@ class FetchUnsuccessfulOrImpossible(BaseException):
 class DocumentModeIsInvalid(BaseException):
     def __init__(self, s: object) -> None:
         super().__init__(s, self.__class__)
+
+
+class UnresolvedErrorWhileFetching(BaseException):
+    def __init__(self, s: object) -> None:
+        super().__init__(s, self.__class__)

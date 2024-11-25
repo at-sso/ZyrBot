@@ -1,3 +1,4 @@
+from pathlib import Path
 from PIL.ImageFile import ImageFile
 from google.generativeai.types.generation_types import GenerateContentResponse
 from collections.abc import (
@@ -65,5 +66,6 @@ MaybeRaises = Optional[NoReturn]
 FlexibleString = str | list[str]
 FlexibleStringMap = dict[str, FlexibleString]
 FlexibleStringData = Optional[FlexibleString]
-KeyValueTuple = tuple[object, str]
-KeyValues = list[KeyValueTuple]
+RawHTMLFile = tuple[str, Path]
+RawHTMLFileList = list[RawHTMLFile]
+RawHTMLData = RawHTMLFileList | RawHTMLFile
