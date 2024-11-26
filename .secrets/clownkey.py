@@ -7,7 +7,7 @@ from src.env import *
 from src.env.globales import *
 from src.env.locales import flags, EnvStates
 
-from src.function_wrapper import f_wrapper
+from src.helpers import *
 
 
 class __DecryptionError(BaseException):

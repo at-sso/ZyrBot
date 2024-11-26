@@ -1,7 +1,7 @@
 import traceback as tb
 from time import time as timer
 
-from .env import *
+from src.env import *
 
 
 class __FunctionWrapper:

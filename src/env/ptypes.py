@@ -1,10 +1,12 @@
 from pathlib import Path
 from PIL.ImageFile import ImageFile
+from flet import Control
 from google.generativeai.types.generation_types import GenerateContentResponse
 from collections.abc import (
     Callable,
     Iterable,
 )
+from types import ModuleType
 from typing import (
     Any,
     Generic,
@@ -43,6 +45,7 @@ StringCallback = Callable[[Optional[str]], None]
 GenericList = list[Any]
 StringList = list[str]
 MediaList = list[_Media]
+ControlList = list[Control]
 
 
 # Maps

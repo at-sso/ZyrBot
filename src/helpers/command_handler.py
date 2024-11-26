@@ -1,7 +1,7 @@
 from flet import Page, ListView, Text
 from icecream import ic
 
-from .env import *
+from src.env import *
 from .function_wrapper import f_wrapper
 
 
@@ -33,8 +33,10 @@ class CommandsHandler:
         # if not handler is self and :
         #    return True
 
-        # Simply check if the text starts with '/', the UI should be able to handle errors already.
-        return command.startswith(self.starter)
+        return (
+            command.startswith(self.starter)
+            and self.__handler.get(command, None) is not None
+        )
 
     def execute(self, command: str):
         handler = self.__handler.get(command, None)

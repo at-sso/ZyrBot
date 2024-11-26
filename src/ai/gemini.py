@@ -12,14 +12,14 @@ def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:
     return {"MODELNAME": model, "DESCRIPTION": desc}
 
 
-ModelNames: StringList = ["1.5-flash", "1.5-flash-8b", "1.5-pro"]
-
-
 class GeminiModel:
     """
     This class provides a virtual interface to interact with a Gemini model, allowing you to
     send prompts and receive responses.
     """
+
+    model_names: StringList = ["1.5-flash", "1.5-flash-8b", "1.5-pro"]
+    """Static list of model names."""
 
     def __init__(self, model: str) -> None:
         # If `secrets` was not initialized, raise exception.
@@ -29,15 +29,15 @@ class GeminiModel:
             )
 
         self.__LISTED_MODELS: NestedStringMap = {
-            ModelNames[0]: _modelname_desc(
+            self.model_names[0]: _modelname_desc(
                 model="gemini-1.5-flash",
                 desc="A versatile model excelling in various tasks.",
             ),
-            ModelNames[1]: _modelname_desc(
+            self.model_names[1]: _modelname_desc(
                 model="gemini-1.5-flash-8b",
                 desc="Optimized for high-volume, less complex tasks.",
             ),
-            ModelNames[2]: _modelname_desc(
+            self.model_names[2]: _modelname_desc(
                 model="gemini-1.5-pro",
                 desc="A powerful model for intricate reasoning and complex tasks.",
             ),
@@ -109,8 +109,9 @@ class GeminiModel:
                 "Check the logger for more information."
             )
 
+        # Write the JSON response into a file in the local cache location.
         latest_res: Path = Path(globales.CACHE_FOLDER) / "latest_response.json"
-        json_res: str = json.dumps(data.to_dict(), indent=4)
+        json_res: str = json.dumps(data.to_dict(), indent=1)
         latest_res.write_text(json_res)
 
         return latest_res
@@ -160,6 +161,3 @@ class GeminiModel:
             return None
 
         return response
-
-
-GeminiType = Type[GeminiModel]

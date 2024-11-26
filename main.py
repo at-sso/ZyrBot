@@ -1,7 +1,6 @@
-from src.ui import Interface, ft
-from src.function_wrapper import f_wrapper
+from src.ui.interface import Interface, ft
 from src.env import *
-from src.env.ptypes import *
+from src.helpers import *
 
 
 def main() -> str:
@@ -14,7 +13,7 @@ def main() -> str:
             f=ft.app,  # type: ignore[reportUnknownArgumentType]
             target=Interface,
             name=EnvInfo.program_name.value,
-            assets_dir="assets",
+            # assets_dir="assets",
         )
     finally:
         results: str = f_wrapper.func_results

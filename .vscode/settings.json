@@ -15,6 +15,7 @@
     "reportUnknownVariableType": "information",
     "reportUnusedClass": "information",
     "reportOptionalIterable": "information",
+    "reportOptionalMemberAccess": "information",
     "reportSelfClsParameterName": "warning",
     "reportUndefinedVariable": "warning",
     "reportUnusedImport": "warning",

@@ -1,15 +1,8 @@
-AI Integration & UI Enhancements
+Refactored UI and added Markdown support
 
 **Body:**
 
-- **Major Feature:** Implemented AI functionality with documentation fetching and rendering in the UI.
-- **UI Enhancements:** Added functionalities for fetching documentation based on user queries and displaying AI responses. (`src/ui.py`)
-- **Documentation Fetching:**
-  - Integrated BeautifulSoup in `fetcher.py` for HTML text extraction.
-  - Introduced `ModelNames` in `gemini.py` for API interaction.
-  - Implemented JSON handling in `gemini.py` and `ui.py` for storing and retrieving responses.
-  - Added a new exception `UnresolvedErrorWhileFetching` for error handling in `fetcher.py`.
-- **Code Improvements:**
-  - Removed unnecessary imports across various files (`main.py`, `gemini.py`).
-  - Fixed the `full_name` function in `friendly_generics.py` to accurately display names.
-  - Improved type definitions in `ptypes.py` by renaming and restructuring types related to HTML data.
+- Organized UI code: Moved interface-related files to `src/ui` and refactored `src/ui/interface.py` for improved structure and readability.
+- Added Markdown rendering (WIP): Implemented basic Markdown parsing (`test.py` & `md_formatter.py`) - not yet integrated into the main program.
+- Improved code organization: Moved `command_handler.py` & `function_wrapper.py` to `src/helpers` for better structure.
+- Introduced new type `ControlList` for use in the Markdown renderer.
