@@ -1,8 +1,10 @@
-Refactored UI and added Markdown support
+Fixed AI Model Setting Issue
 
 **Body:**
 
-- Organized UI code: Moved interface-related files to `src/ui` and refactored `src/ui/interface.py` for improved structure and readability.
-- Added Markdown rendering (WIP): Implemented basic Markdown parsing (`test.py` & `md_formatter.py`) - not yet integrated into the main program.
-- Improved code organization: Moved `command_handler.py` & `function_wrapper.py` to `src/helpers` for better structure.
-- Introduced new type `ControlList` for use in the Markdown renderer.
+- Fixed user error when setting the AI model.
+- Made `GEMINI_MODEL_NAMES` public for developer customization (previously static in `gemini.py`).
+- Updated `GeminiModel`'s `model` argument to be optional (string or `None`).
+  - Allows setting the model later.
+  - Raises `AIModelIsInvalid` if `model` is `NoneType` and `do_raise` is `True` (default).
+- Removed optional typing for `self.__gemini` due to model change.

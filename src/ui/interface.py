@@ -58,7 +58,7 @@ class Interface:
 
         logger.info("Building dropdown menu lists")
         self.__ai_types_list: StringList = [
-            f"Gemini Model: {v}" for v in GeminiModel.model_names
+            f"Gemini Model: {v}" for v in GEMINI_MODEL_NAMES
         ]
         """Simply allows the user to specify their AI. This can be easily expanded."""
         self.__py_vers: StringList = [f"Python {v}" for v in py_fetch.PY_VERSIONS]
@@ -78,7 +78,7 @@ class Interface:
         Use the name of the variable as a string key.
         """
         self.__raw_html_data: Optional[RawHTMLData] = None
-        self.__gemini: Optional[GeminiModel] = None
+        self.__gemini = GeminiModel(do_raise=False)
         self.__is_after_fetch: bool = False
 
         self.start()
@@ -259,7 +259,7 @@ class Interface:
     def __get_new_message_from_ai(self, user_message: str) -> None:
         friendly.i_was_called(self.__get_new_message_from_ai)
 
-        if self.__gemini is None and not self.__is_after_fetch:
+        if not self.__is_after_fetch:
             raise ai_exc.AIRequestFailure("Failed to get message from AI.")
 
         if isinstance(self.__raw_html_data, list):
@@ -311,7 +311,7 @@ class Interface:
                 f"Message {EnvInfo.ai_name.value}{f' - {name}' if name is not None else ''}"
             )
             self.__gemini = GeminiModel(
-                int_helper.get_logical_value(name, self.__gemini.model_names)
+                int_helper.get_logical_value(name, GEMINI_MODEL_NAMES)
             )
             self.__write_msg_field.label = final
             self.__write_msg_field.update()

@@ -12,16 +12,27 @@ def _modelname_desc(model: LitStr, desc: LitStr) -> StringMap:
     return {"MODELNAME": model, "DESCRIPTION": desc}
 
 
+GEMINI_MODEL_NAMES: StringList = ["1.5-flash", "1.5-flash-8b", "1.5-pro"]
+"""List of model names."""
+
+
 class GeminiModel:
     """
     This class provides a virtual interface to interact with a Gemini model, allowing you to
     send prompts and receive responses.
     """
 
-    model_names: StringList = ["1.5-flash", "1.5-flash-8b", "1.5-pro"]
-    """Static list of model names."""
+    def __init__(self, model: Optional[str] = None, do_raise: bool = True) -> None:
+        # If `model` is invalid, raise an exception if needed.
+        if model is None or model not in GEMINI_MODEL_NAMES:
+            m: str = (
+                f"The model of {self.__class__} is invalid or 'NoneType'. This class will not initialize."
+            )
+            if do_raise:
+                raise AIModelIsInvalid(m)
+            logger.warning(m)
+            return
 
-    def __init__(self, model: str) -> None:
         # If `secrets` was not initialized, raise exception.
         if not secrets.was_initialized():
             raise ImpossibleKeyRetrieval(
@@ -29,15 +40,15 @@ class GeminiModel:
             )
 
         self.__LISTED_MODELS: NestedStringMap = {
-            self.model_names[0]: _modelname_desc(
+            GEMINI_MODEL_NAMES[0]: _modelname_desc(
                 model="gemini-1.5-flash",
                 desc="A versatile model excelling in various tasks.",
             ),
-            self.model_names[1]: _modelname_desc(
+            GEMINI_MODEL_NAMES[1]: _modelname_desc(
                 model="gemini-1.5-flash-8b",
                 desc="Optimized for high-volume, less complex tasks.",
             ),
-            self.model_names[2]: _modelname_desc(
+            GEMINI_MODEL_NAMES[2]: _modelname_desc(
                 model="gemini-1.5-pro",
                 desc="A powerful model for intricate reasoning and complex tasks.",
             ),

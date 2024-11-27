@@ -26,6 +26,11 @@ class FetchUnsuccessfulOrImpossible(BaseException):
         super().__init__(s, self.__class__)
 
 
+class AIModelIsInvalid(BaseException):
+    def __init__(self, s: object) -> None:
+        super().__init__(s, self.__class__)
+
+
 class DocumentModeIsInvalid(BaseException):
     def __init__(self, s: object) -> None:
         super().__init__(s, self.__class__)
